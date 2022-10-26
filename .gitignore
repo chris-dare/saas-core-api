@@ -163,3 +163,7 @@ cython_debug/
 
 cookiecutter-config-file.yml
 traefik-public-certificates
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
