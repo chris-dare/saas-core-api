@@ -8,7 +8,7 @@ services:
       - "8090:8080"
     image: traefik:v2.2
     networks:
-      - traefik-public
+      - ${TRAEFIK_PUBLIC_NETWORK?Variable not set}
       - default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -57,4 +57,4 @@ volumes:
 networks:
   traefik-public:
     # Allow setting it to false for testing
-    external: ${TRAEFIK_PUBLIC_NETWORK_IS_EXTERNAL-true}
+    external: ${TRAEFIK_PUBLIC_NETWORK_IS_EXTERNAL-false}
