@@ -41,7 +41,13 @@ services:
       dockerfile: backend_test.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
-    command: /start.sh
+    environment:
+      POSTGRES_SERVER: ${POSTGRES_SERVER?Variable not set}
+      POSTGRES_PORT: ${POSTGRES_PORT?Variable not set}
+      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
+      POSTGRES_DB: ${POSTGRES_DB?Variable not set}
+
     volumes:
       - ./backend:/app
     labels:
