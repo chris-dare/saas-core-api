@@ -1,12 +1,11 @@
 import uuid
 
+import phonenumbers
+import sentry_sdk
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import RegexValidator
 from django.db import IntegrityError, models
 from django.utils.translation import ugettext_lazy as _
-
-import phonenumbers
-import sentry_sdk
 from rest_framework.exceptions import ValidationError
 
 from .managers import UserManager
@@ -27,7 +26,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("mobile"), max_length=30, blank=True, unique=True, validators=[phone_regex]
     )
     national_mobile_number = models.CharField(
-        _("mobile number in national format"), max_length=30, blank=True, null=True,
+        _("mobile number in national format"),
+        max_length=30,
+        blank=True,
+        null=True,
     )
     date_joined = models.DateTimeField(_("date joined"), auto_now_add=True)
     is_active = models.BooleanField(_("active"), default=True)
