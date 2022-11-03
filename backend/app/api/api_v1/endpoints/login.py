@@ -1,15 +1,11 @@
-from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.api import deps
-from app.core import security
-from app.core.config import settings
-from app.core.security import get_password_hash
 
 router = APIRouter()
 
@@ -38,7 +34,6 @@ def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:
     Password Recovery
     """
     raise NotImplementedError
-
 
 
 @router.post("/reset-password/", response_model=schemas.Msg)

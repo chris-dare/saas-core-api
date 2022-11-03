@@ -4,8 +4,8 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
-from config.wsgi import application
 from config.asgi import application as django_async_app
+from config.wsgi import application
 
 django_async_app = django_async_app
 
@@ -27,7 +27,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 app.mount("/legacy", WSGIMiddleware(application))
 
+
 @app.get("/")
 def read_main():
     return {"message": "Hello World"}
-

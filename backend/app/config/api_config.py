@@ -1,7 +1,8 @@
 from typing import Optional
-from pydantic import BaseSettings
 
-import orm, databases
+import databases
+import orm
+from pydantic import BaseSettings
 
 
 class APISettings(BaseSettings):
@@ -14,7 +15,12 @@ class APISettings(BaseSettings):
     DEFAULT_DB: Optional[databases.Database] = None
     DEFAULT_MODEL_REGISTRY: Optional[orm.ModelRegistry] = None
 
+
 api_settings = APISettings()
 
-api_settings.DEFAULT_DB = databases.Database(f"postgresql://{api_settings.POSTGRES_USER}:{api_settings.POSTGRES_PASSWORD}@{api_settings.POSTGRES_SERVER}:{api_settings.POSTGRES_PORT}/{api_settings.POSTGRES_DB}")
-api_settings.DEFAULT_MODEL_REGISTRY = orm.ModelRegistry(database=api_settings.DEFAULT_DB)
+api_settings.DEFAULT_DB = databases.Database(
+    f"postgresql://{api_settings.POSTGRES_USER}:{api_settings.POSTGRES_PASSWORD}@{api_settings.POSTGRES_SERVER}:{api_settings.POSTGRES_PORT}/{api_settings.POSTGRES_DB}"
+)
+api_settings.DEFAULT_MODEL_REGISTRY = orm.ModelRegistry(
+    database=api_settings.DEFAULT_DB
+)

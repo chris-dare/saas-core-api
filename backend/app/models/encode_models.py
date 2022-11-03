@@ -5,7 +5,6 @@ data concerning users on HyperSenta
 
 import orm
 
-from typing import Optional
 from app.config.api_config import api_settings
 
 

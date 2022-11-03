@@ -1,21 +1,18 @@
 import uuid
 
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.validators import RegexValidator
+from django.db import IntegrityError, models
+from django.utils.translation import ugettext_lazy as _
+
 import phonenumbers
 import sentry_sdk
-from django.conf import settings
-from django.contrib.auth.base_user import BaseUserManager
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.validators import RegexValidator
-from django.db import models, IntegrityError
-from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from .managers import UserManager
 
 # Custom Authentication User Model
-from app.utils.security import generate_password
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     uuid = models.TextField(unique=True, default=uuid.uuid4, editable=False, blank=True)
@@ -46,20 +43,29 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def save(self, *args, **kwargs):
         from app.utils.parser import parse_mobile_number
-        self.first_name = self.first_name.capitalize() if self.first_name else self.first_name
-        self.last_name = self.last_name.capitalize() if self.last_name else self.last_name
+
+        self.first_name = (
+            self.first_name.capitalize() if self.first_name else self.first_name
+        )
+        self.last_name = (
+            self.last_name.capitalize() if self.last_name else self.last_name
+        )
         # update national phone number and save
         old_mobile = self.mobile
         try:
             self.mobile = parse_mobile_number(self.mobile)
-            self.national_mobile_number = parse_mobile_number(self.mobile, international_format=False)
+            self.national_mobile_number = parse_mobile_number(
+                self.mobile, international_format=False
+            )
         except (ValidationError) as e:
             if isinstance(e, Exception):
                 sentry_sdk.capture_exception(error=e)
-            sentry_sdk.capture_message(message=f"Invalid number for {self.fullname} ({self.mobile}: {e}")
+            sentry_sdk.capture_message(
+                message=f"Invalid number for {self.fullname} ({self.mobile}: {e}"
+            )
         try:
             return super(User, self).save(*args, **kwargs)
-        except IntegrityError as e:
+        except IntegrityError:
             self.mobile = old_mobile
             return super(User, self).save(*args, **kwargs)
 

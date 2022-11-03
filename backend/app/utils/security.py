@@ -7,8 +7,9 @@ import hashlib
 
 def make_password(raw_password: str) -> str:
     assert raw_password
-    hash = hashlib.md5(raw_password.encode('utf-8')).hexdigest()
+    hash = hashlib.md5(raw_password.encode("utf-8")).hexdigest()
     return hash
+
 
 def check_password(hash: str, raw_password: str) -> bool:
     """Generates the hash for a raw_password and compares it."""
