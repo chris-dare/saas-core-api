@@ -1,18 +1,17 @@
 from typing import Any, List
 
+from db.session import engine
 from fastapi import APIRouter, Body, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import models
 from app.api import deps
-from app.core.config import settings
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.User])
+@router.get("/", response_model=List[models.UserRead])
 def read_users(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -26,11 +25,11 @@ def read_users(
     return users
 
 
-@router.post("/", response_model=schemas.User)
+@router.post("/", response_model=models.UserRead)
 def create_user(
     *,
     db: Session = Depends(deps.get_db),
-    user_in: schemas.UserCreate,
+    user_in: models.UserCreate,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
@@ -39,7 +38,7 @@ def create_user(
     raise NotImplementedError
 
 
-@router.put("/me", response_model=schemas.User)
+@router.put("/me", response_model=models.UserRead)
 def update_user_me(
     *,
     db: Session = Depends(deps.get_db),
@@ -54,7 +53,7 @@ def update_user_me(
     raise NotImplementedError
 
 
-@router.get("/me", response_model=schemas.User)
+@router.get("/me", response_model=models.UserRead)
 def read_user_me(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -65,7 +64,7 @@ def read_user_me(
     return current_user
 
 
-@router.post("/open", response_model=schemas.User)
+@router.post("/open", response_model=models.UserRead)
 def create_user_open(
     *,
     db: Session = Depends(deps.get_db),
@@ -79,7 +78,7 @@ def create_user_open(
     raise NotImplementedError
 
 
-@router.get("/{user_id}", response_model=schemas.User)
+@router.get("/{user_id}", response_model=models.UserRead)
 def read_user_by_id(
     user_id: int,
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -88,15 +87,19 @@ def read_user_by_id(
     """
     Get a specific user by id.
     """
-    raise NotImplementedError
+    with Session(engine) as session:
+        user = session.get(models.User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
 
 
-@router.put("/{user_id}", response_model=schemas.User)
+@router.put("/{user_id}", response_model=models.UserRead)
 def update_user(
     *,
     db: Session = Depends(deps.get_db),
     user_id: int,
-    user_in: schemas.UserUpdate,
+    user_in: models.UserUpdate,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
