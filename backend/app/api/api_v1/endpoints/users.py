@@ -4,6 +4,7 @@ from db.session import engine
 from fastapi import APIRouter, Body, Depends, HTTPException
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
+from sqlmodel import select
 
 from app import models
 from app.api import deps
@@ -14,43 +15,38 @@ router = APIRouter()
 @router.get("/", response_model=List[models.UserRead])
 def read_users(
     db: Session = Depends(deps.get_db),
-    skip: int = 0,
+    offset: int = 0,
     limit: int = 100,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Retrieve users.
+    Retrieves a list of users
     """
-    users = []
-    return users
-
-
-@router.post("/", response_model=models.UserRead)
-def create_user(
-    *,
-    db: Session = Depends(deps.get_db),
-    user_in: models.UserCreate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Create new user.
-    """
-    raise NotImplementedError
+    with Session(engine) as session:
+        users = session.exec(select(models.User).offset(offset).limit(limit)).all()
+        return users
 
 
 @router.put("/me", response_model=models.UserRead)
 def update_user_me(
     *,
     db: Session = Depends(deps.get_db),
-    password: str = Body(None),
-    full_name: str = Body(None),
-    email: EmailStr = Body(None),
+    user: models.UserUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update own user.
     """
-    raise NotImplementedError
+    with Session(engine) as session:
+        if not current_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_data = user.dict(exclude_unset=True)
+        for key, value in user_data.items():
+            setattr(current_user, key, value)
+        session.add(current_user)
+        session.commit()
+        session.refresh(current_user)
+        return current_user
 
 
 @router.get("/me", response_model=models.UserRead)
@@ -64,31 +60,35 @@ def read_user_me(
     return current_user
 
 
-@router.post("/open", response_model=models.UserRead)
-def create_user_open(
+@router.post("/sign-up", response_model=models.UserRead)
+def sign_up(
     *,
     db: Session = Depends(deps.get_db),
-    password: str = Body(...),
-    email: EmailStr = Body(...),
-    full_name: str = Body(None),
+    user_in: models.UserCreate,
 ) -> Any:
     """
     Create new user without the need to be logged in.
     """
-    raise NotImplementedError
+    with Session(engine) as session:
+        current_user = models.User.from_orm(user_in)
+        session.add(current_user)
+        session.commit()
+        session.refresh(current_user)
+        return current_user
 
 
 @router.get("/{user_id}", response_model=models.UserRead)
 def read_user_by_id(
-    user_id: int,
+    user_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """
-    Get a specific user by id.
+    Get a specific user by id
     """
     with Session(engine) as session:
-        user = session.get(models.User, user_id)
+        statement = select(User).where(User.uuid == user_id).first()
+        user = session.exec(statement)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         return user
@@ -98,11 +98,22 @@ def read_user_by_id(
 def update_user(
     *,
     db: Session = Depends(deps.get_db),
-    user_id: int,
+    user_id: str,
     user_in: models.UserUpdate,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Update a user.
+    Update a user
     """
-    raise NotImplementedError
+    with Session(engine) as session:
+        # user = session.get(models.User, user_id)
+        user = session.exec(select(models.User)).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_data = user.dict(exclude_unset=True)
+        for key, value in user_data.items():
+            setattr(user, key, value)
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
