@@ -23,5 +23,5 @@ def parse_mobile_number(
         else:  # return number in national format
             mobile = f"{mobile.country_code_source}{mobile.national_number}"
     except phonenumbers.NumberParseException as err:
-        raise ValidationError("mobile or telephone number is invalid")
+        raise ValueError("mobile or telephone number is invalid")
     return mobile

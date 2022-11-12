@@ -69,12 +69,15 @@ def sign_up(
     """
     Create new user without the need to be logged in.
     """
-    with Session(engine) as session:
-        current_user = models.User.from_orm(user_in)
-        session.add(current_user)
-        session.commit()
-        session.refresh(current_user)
-        return current_user
+    try:
+        with Session(engine) as session:
+            user = models.User.from_orm(user_in)
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+            return user
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"{e}")
 
 
 @router.get("/{user_id}", response_model=models.UserRead)
@@ -87,7 +90,7 @@ def read_user_by_id(
     Get a specific user by id
     """
     with Session(engine) as session:
-        statement = select(User).where(User.uuid == user_id).first()
+        statement = select(models.User).where(models.User.uuid == user_id).first()
         user = session.exec(statement)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
