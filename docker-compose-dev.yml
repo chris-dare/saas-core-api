@@ -50,11 +50,14 @@ services:
           - node.labels.${STACK_NAME?Variable not set}.app-db-data == true
 
   backend:
+    ports:
+        - "8888:8888"
     build:
       context: ./backend
       dockerfile: backend.dockerfile
       args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
+        INSTALL_DEV: ${INSTALL_DEV-true}
+        INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
     command: /start-reload.sh
     environment:
       FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
