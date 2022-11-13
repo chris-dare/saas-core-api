@@ -2,18 +2,19 @@ from typing import Any, List
 
 from db.session import engine
 from fastapi import APIRouter, Body, Depends, HTTPException
-from fastapi_pagination import Page, paginate
+from fastapi_pagination import paginate
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 from sqlmodel import select
 
 from app import models
 from app.api import deps
+from app.middleware.pagination import JsonApiPage
 
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[models.UserRead])
+@router.get("/", response_model=JsonApiPage[models.UserRead])
 def read_users(
     db: Session = Depends(deps.get_db),
     offset: int = 0,
