@@ -2,6 +2,7 @@ from config.asgi import application as django_async_app
 from config.wsgi import application
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import api_router
@@ -31,3 +32,6 @@ app.mount("/legacy", WSGIMiddleware(application))
 @app.get("/")
 def read_main():
     return {"message": "Hello World"}
+
+# Register pagination middleware
+add_pagination(app)

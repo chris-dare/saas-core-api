@@ -2,6 +2,7 @@ from typing import Any, List
 
 from db.session import engine
 from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi_pagination import Page, paginate
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 from sqlmodel import select
@@ -12,7 +13,7 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=List[models.UserRead])
+@router.get("/", response_model=Page[models.UserRead])
 def read_users(
     db: Session = Depends(deps.get_db),
     offset: int = 0,
@@ -24,7 +25,7 @@ def read_users(
     """
     with Session(engine) as session:
         users = session.exec(select(models.User).offset(offset).limit(limit)).all()
-        return users
+        return paginate(users)
 
 
 @router.put("/me", response_model=models.UserRead)
