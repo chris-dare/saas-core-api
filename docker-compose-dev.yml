@@ -72,6 +72,7 @@ services:
       SENTRY_DSN: ${SENTRY_DSN?Variable not set}
       SERVER_NAME: ${PROJECT_NAME?Variable not set}
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS?Variable not set}
+      SEGMENT_WRITE_KEY: ${SEGMENT_WRITE_KEY?Variable not set}
 
 
     volumes:

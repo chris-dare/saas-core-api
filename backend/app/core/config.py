@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
+    SEGMENT_WRITE_KEY: Optional[str] = None # TODO: Implement: https://segment.com/docs/connections/sources/catalog/libraries/server/python/quickstart/
 
     class Config:
         case_sensitive = True

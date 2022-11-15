@@ -31,6 +31,7 @@ psycopg2 = "^2.9.5"
 sqlmodel = "^0.0.8"
 phonenumbers = "^8.12.57"
 fastapi-pagination = "^0.10.0"
+segment-analytics-python = "^2.2.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.770"
