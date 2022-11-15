@@ -170,3 +170,4 @@ traefik-public-certificates
 
 # app
 backend/lab
+frontend
