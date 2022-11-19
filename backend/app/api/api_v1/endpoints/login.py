@@ -48,7 +48,7 @@ def generate_otp(
     mode: str = Body(...),  # email or SMS
     db: Session = Depends(deps.get_db),
 ) -> Any:
-    """ """
+    """Generates an OTP for 2FA or user verification/activation"""
     user = crud.user.get_by_uuid(db=db, uuid=user_id)
     otp = crud.otp.create_with_owner(
         db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user
