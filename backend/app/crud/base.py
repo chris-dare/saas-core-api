@@ -23,8 +23,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    def get(self, db: Session, id: Any) -> Optional[ModelType]:
-        return db.query(self.model).filter(self.model.id == id).first()
+    def get(self, db: Session, id: Optional[Any] = None, uuid: Optional[Any] = None) -> Optional[ModelType]:
+        if id:
+            return db.query(self.model).filter(self.model.id == id).first()
+        elif uuid:
+            return db.query(self.model).filter(self.model.uuid == uuid).first()
+        else:
+            raise ValueError("QueryError. No id or uuid for object search provided!")
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
