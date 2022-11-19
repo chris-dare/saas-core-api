@@ -1,6 +1,6 @@
 """The :mod:`api.middleware.pagination` containts middleware for implementing custom pagination in this API"""
 
-from typing import TypeVar, Generic
+from typing import Generic, TypeVar
 
 from fastapi_pagination.links import Page
 

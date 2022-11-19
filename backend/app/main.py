@@ -33,5 +33,6 @@ app.mount("/legacy", WSGIMiddleware(application))
 def read_main():
     return {"message": "Hello World"}
 
+
 # Register pagination middleware
 add_pagination(app)

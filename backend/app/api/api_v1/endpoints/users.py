@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from db.session import engine
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -7,7 +7,7 @@ from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 from sqlmodel import select
 
-from app import models
+from app import crud, models
 from app.api import deps
 from app.middleware.pagination import JsonApiPage
 
@@ -80,6 +80,29 @@ def sign_up(
             return user
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"{e}")
+
+
+@router.post("/activate", response_model=models.UserRead)
+def activate_user(
+    user_id: str = Body(...),
+    otp_code: str = Body(...),
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Activates a newly created user via their OTP
+    """
+    user = crud.user.get_by_uuid(db=db, uuid=user_id)
+    otp: models.OTP = crud.otp.get_user_otp(db=db, user=user)
+    if not otp:
+        raise HTTPException(
+            status_code=400, detail="We couldn't verify your OTP code. Please try again"
+        )
+    is_verified = True if otp.code == otp_code else False
+    if is_verified:
+        user = crud.user.activate(db=db, user=user)
+    else:
+        raise HTTPException(status_code=400, detail="Sorry, your OTP code is invalid")
+    return user
 
 
 @router.get("/{user_id}", response_model=models.UserRead)

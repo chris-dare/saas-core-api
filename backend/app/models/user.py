@@ -10,12 +10,13 @@ from typing import Any, Dict, Optional
 
 import phonenumbers
 import sqlalchemy as sa
-from pydantic import EmailStr, validator, root_validator
+from pydantic import EmailStr, root_validator, validator
 from sqlmodel import Column, DateTime, Field, SQLModel
 
-from .abstract import TimeStampedModel
 from app.utils.parser import parse_mobile_number
 from app.utils.security import make_password
+
+from .abstract import TimeStampedModel
 
 
 class UserBase(SQLModel):
@@ -24,12 +25,13 @@ class UserBase(SQLModel):
     full_name: Optional[str] = Field(description="User's last name", nullable=False)
     mobile: str = Field(
         regex=r"^\+?1?\d{9,15}$",
-        index=True, nullable=True, unique=True,
+        index=True,
+        nullable=True,
+        unique=True,
         description="International country calling format for user's phone number",
     )
     national_mobile_number: Optional[str] = Field(
-        nullable=True,
-        description="National calling format for the user's phone number"
+        nullable=True, description="National calling format for the user's phone number"
     )
     email: EmailStr = Field(
         description="User's email address", index=True, nullable=False, unique=True
@@ -62,13 +64,17 @@ class User(UserBase, TimeStampedModel, table=True):
     )
 
     @validator("national_mobile_number", pre=True)
-    def validate_national_phone_number(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    def validate_national_phone_number(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> Any:
         mobile_number = values.get("mobile")
         if not mobile_number:
-            return v # so this can be excluded as an unset property in an update
+            return v  # so this can be excluded as an unset property in an update
         national_mobile_number = ""
         try:
-            national_mobile_number = parse_mobile_number(phone_number=mobile_number, international_format=False)
+            national_mobile_number = parse_mobile_number(
+                phone_number=mobile_number, international_format=False
+            )
         except phonenumbers.NumberParseException:
             pass
         return national_mobile_number
@@ -98,7 +104,6 @@ class UserCreate(UserBase):
 
 
 class UserRead(UserBase, TimeStampedModel):
-    uuid: str
     full_name: str = Field(index=True, nullable=False)
     is_active: bool
     last_login: Optional[datetime] = None
