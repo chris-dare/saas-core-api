@@ -24,9 +24,8 @@ def read_users(
     """
     Retrieves a list of users
     """
-    with Session(engine) as session:
-        users = session.exec(select(models.User).offset(offset).limit(limit)).all()
-        return paginate(users)
+    users = crud.user.get_multi(db=db, limit=limit, skip=offset)
+    return paginate(users)
 
 
 @router.put("/me", response_model=models.UserRead)
