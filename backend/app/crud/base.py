@@ -23,7 +23,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    def get(self, db: Session, id: Optional[Any] = None, uuid: Optional[Any] = None) -> Optional[ModelType]:
+    def get(
+        self, db: Session, id: Optional[Any] = None, uuid: Optional[Any] = None
+    ) -> Optional[ModelType]:
         if id:
             return db.query(self.model).filter(self.model.id == id).first()
         elif uuid:
