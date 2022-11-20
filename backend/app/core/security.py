@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
+from random import randint
 from typing import Any, Union
 
 from jose import jwt
 from passlib.context import CryptContext
 
+from app import models
 from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -32,3 +34,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+def generate_otp_code(n=6):
+    range_start = 10 ** (n - 1)
+    range_end = (10**n) - 1
+    return randint(range_start, range_end)

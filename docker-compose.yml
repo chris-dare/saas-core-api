@@ -41,6 +41,7 @@ services:
       dockerfile: backend.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
+        INSTALL_JUPYTER: ${INSTALL_JUPYTER-false}
     environment:
       FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
@@ -53,6 +54,8 @@ services:
       SECRET_KEY: ${SECRET_KEY?Variable not set}
       SENTRY_DSN: ${SENTRY_DSN?Variable not set}
       SERVER_NAME: ${PROJECT_NAME?Variable not set}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS?Variable not set}
+      SEGMENT_WRITE_KEY: ${SEGMENT_WRITE_KEY?Variable not set}
 
     volumes:
       - ./backend:/app
