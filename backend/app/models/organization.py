@@ -18,9 +18,6 @@ from typing import Optional, Dict, Any
 
 
 class OrganizationBase(SQLModel):
-    owner_id: uuid_pkg.UUID = Field(
-        description="User's public UUID", nullable=False, index=True
-    )
     name: str = Field(
         description="Business name", unique=True, index=True, nullable=False
     )
@@ -68,19 +65,33 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
     region: str = Field(description="Region of address")
     country: str = Field(description="Country of address")
 
+    @validator("national_mobile_number", pre=True)
+    def validate_national_phone_number(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> Any:
+        mobile_number = values.get("mobile")
+        if not mobile_number:
+            return v  # so this can be excluded as an unset property in an update
+        national_mobile_number = ""
+        try:
+            national_mobile_number = parse_mobile_number(
+                phone_number=mobile_number, international_format=False
+            )
+        except phonenumbers.NumberParseException:
+            pass
+        return national_mobile_number
+
     # meta properties
     __tablename__ = "organizations"
 
 
 class OrganizationCreate(OrganizationBase):
-    uuid: uuid_pkg.UUID = uuid_pkg.uuid4()
     mobile: str
     national_mobile_number: str
     email: str
     line_address: Optional[str] = ""
     region: str = ""
     country: str = ""
-
 
     @validator("national_mobile_number", pre=True)
     def validate_national_phone_number(

@@ -40,7 +40,7 @@ def create_organization(
     """
     Create new organization.
     """
-    organization = crud.organization.create_with_owner(db=db, obj_in=organization_in, owner_id=current_user.id)
+    organization = crud.organization.create_with_owner(db=db, obj_in=organization_in, user=current_user)
     return organization
 
 
