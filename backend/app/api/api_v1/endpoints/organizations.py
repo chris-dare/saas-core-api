@@ -27,7 +27,7 @@ def read_organizations(
         organizations = crud.organization.get_multi_by_owner(
             db=db, user_id=current_user.uuid, skip=skip, limit=limit
         )
-    return organizations
+    return paginate(organizations)
 
 
 @router.post("/", response_model=models.OrganizationRead)
