@@ -87,7 +87,7 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
 
 class OrganizationCreate(OrganizationBase):
     mobile: str
-    national_mobile_number: str
+    national_mobile_number: Optional[str] = ""
     email: str
     line_address: Optional[str] = ""
     region: str = ""
