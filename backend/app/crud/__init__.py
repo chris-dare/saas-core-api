@@ -1,6 +1,7 @@
 from .crud_otp import otp
 from .crud_user import user
 from .crud_organization import organization
+from .crud_organization_member import organization_member
 
 # For a new basic set of CRUD operations you could just do
 
