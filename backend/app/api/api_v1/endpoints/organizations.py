@@ -48,14 +48,14 @@ def create_organization(
 def update_organization(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: str,
     organization_in: models.OrganizationUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update an organization.
     """
-    organization = crud.organization.get(db=db, id=id)
+    organization = crud.organization.get(db=db, uuid=id)
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
     if not crud.user.is_superuser(current_user) and (organization.owner_id != current_user.id):
@@ -64,21 +64,21 @@ def update_organization(
     return organization
 
 
-@router.get("/{id}", response_model=models.OrganizationRead)
+@router.get("/{organization_id}", response_model=models.OrganizationRead)
 def read_organization(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Get organization by ID.
+    Get organization by public ID.
     """
-    organization = crud.organization.get(db=db, id=id)
+    organization = crud.organization.get(db=db, uuid=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="organization not found")
-    if not crud.user.is_superuser(current_user) and (organization.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+    if not crud.user.is_superuser(current_user) and (organization.owner_id != current_user.uuid):
+        raise HTTPException(status_code=400, detail="Not enough permissions to view this organization")
     return organization
 
 
@@ -86,13 +86,13 @@ def read_organization(
 def delete_organization(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Sets an organization for deactivation and subsequent deletion
     """
-    organization = crud.organization.get(db=db, id=id)
+    organization = crud.organization.get(db=db, uuid=id)
     if not organization:
         raise HTTPException(status_code=404, detail="organization not found")
     if not crud.user.is_superuser(current_user) and (organization.owner_id != current_user.id):
