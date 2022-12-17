@@ -23,6 +23,8 @@ class UserBase(SQLModel):
     first_name: str = Field(description="User's first name", nullable=False)
     last_name: str = Field(description="User's last name", nullable=False)
     full_name: Optional[str] = Field(description="User's last name", nullable=False)
+    last_used_organization_name: Optional[str] = Field(description="Name of last used organization", nullable=True)
+    last_used_organization_id: Optional[uuid_pkg.UUID] = Field(description="UUID of last used organization", nullable=True)
     mobile: str = Field(
         regex=r"^\+?1?\d{9,15}$",
         index=True,
