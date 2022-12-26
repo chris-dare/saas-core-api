@@ -85,6 +85,9 @@ class Settings(BaseSettings):
     SEGMENT_WRITE_KEY: Optional[
         str
     ] = None  # TODO: Implement: https://segment.com/docs/connections/sources/catalog/libraries/server/python/quickstart/
+    TWILIO_ACCOUNT_SID: Optional[str] = ""
+    TWILIO_AUTH_TOKEN: Optional[str] = ""
+    TWILIO_MESSAGING_SERVICE_SID: Optional[str] = ""
 
     class Config:
         case_sensitive = True
