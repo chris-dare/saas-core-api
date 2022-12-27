@@ -3,9 +3,9 @@
 # Author: Christopher Dare
 
 from enum import Enum
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
-from pydantic import EmailStr
+from pydantic import BaseModel, EmailStr
 
 from app.core.config import settings
 
@@ -76,23 +76,28 @@ class EmailMessageClient(MessageClient):
         self,
         recipients: Union[List, EmailStr],
         subject: str,
-        template: EmailTemplate,
+        message: Optional[str] = None,
+        template: Optional[EmailTemplate] = None,
+        template_vars: Optional[BaseModel] = None,
     ):
         response = None
-        if self.provider == MessagingProviders.TWILIO:
-            response = self.client.messages.create(
-                messaging_service_sid=self.messaging_service_sid,
-                body=message,
-                to=recipients,
+        html_content = None
+        if not message and not template:
+            raise ValueError(
+                "Please provide a template or message in order to send an email!"
             )
-        elif self.provider == MessagingProviders.SENDGRID:
+        if message:
+            html_content = message
+        if template:
+            raise ValueError("Dynamic Email templates not yet supported!")
+        if self.provider == MessagingProviders.SENDGRID:
             from sendgrid.helpers.mail import Mail
 
             message = Mail(
                 from_email=settings.EMAILS_FROM_EMAIL,
                 to_emails=recipients,
                 subject=subject,
-                html_content="<strong>and easy to do anywhere, even with Python</strong>",
+                html_content=html_content,
             )
             try:
                 response = self.client.send(message)
@@ -115,10 +120,13 @@ def send_sms(
 
 def send_email(
     recipients: Union[List[EmailStr], EmailStr],
-    message: str,
-    template: EmailTemplate,
     subject: str,
+    message: Optional[str] = None,
+    template: Optional[EmailTemplate] = None,
+    template_vars: Optional[BaseModel] = None,
     provider: MessagingProviders = MessagingProviders.SENDGRID,
 ):
     client = EmailMessageClient(provider=provider)
-    return client.send(recipients=recipients, subject=subject, template=template)
+    return client.send(
+        recipients=recipients, subject=subject, template=template, message=message
+    )
