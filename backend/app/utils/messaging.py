@@ -127,6 +127,7 @@ def send_email(
     provider: MessagingProviders = MessagingProviders.SENDGRID,
 ):
     client = EmailMessageClient(provider=provider)
+    recipients = recipients if isinstance(recipients, list) else [recipients]
     return client.send(
         recipients=recipients, subject=subject, template=template, message=message
     )
