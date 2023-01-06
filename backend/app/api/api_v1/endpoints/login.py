@@ -53,7 +53,7 @@ def generate_otp(
     otp = crud.otp.create_with_owner(
         db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user
     )
-    is_otp_message_sent = crud.otp.send_otp(db=db, user=user)
+    is_otp_message_sent = crud.otp.send_otp(db=db, user=user, otp=otp)
     if not is_otp_message_sent:
         raise HTTPException(
             status_code=400,
@@ -61,7 +61,7 @@ def generate_otp(
         )
     response = {
         "success": is_otp_message_sent,
-        "otp": otp,
+        "otp": otp, # TODO: Exclude from API once Twilio funding is secured
     }
     return response
 
