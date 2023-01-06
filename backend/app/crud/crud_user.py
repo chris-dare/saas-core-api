@@ -4,10 +4,12 @@ from typing import Any, Dict, Optional, Union
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password
+from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.utils.security import check_password, make_password
+from app.utils.messaging import ModeOfMessageDelivery, send_sms
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -17,8 +19,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
         return db.query(User).filter(User.uuid == uuid).first()
 
-    def create(self, db: Session, *, obj_in: UserCreate) -> User:
-        db_obj = User(
+    def create(self, db: Session, *, obj_in: UserCreate, notify: bool = True) -> User:
+        db_obj: User = User(
             email=obj_in.email,
             hashed_password=get_password_hash(obj_in.password),
             full_name=obj_in.full_name,
@@ -26,6 +28,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         )
         db.add(db_obj)
         db.commit()
+        with db_obj as new_user:
+            if notify:
+                self.notify(db_obj, message=f"Hi {new_user.full_name}, welcome to {settings.PROJECT_NAME}")
         db.refresh(db_obj)
         return db_obj
 
@@ -62,6 +67,17 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db.commit()
         db.refresh(user)
         return user
+
+    def notify(self, user: User, message: str, subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS) -> None:
+        """Sends user a notification message"""
+        if isinstance(mode, str):
+            mode = ModeOfMessageDelivery(mode)
+        if mode == ModeOfMessageDelivery.SMS:
+            send_sms(mobile=user.mobile, message=message)
+        elif mode == ModeOfMessageDelivery.EMAIL:
+            send_email(recipients=user.email, message=message, subject=subject)
+        else:
+            raise Exception("Unsupported message delivery mode!")
 
     def is_active(self, user: User) -> bool:
         return user.is_active
