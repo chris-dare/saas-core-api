@@ -4,9 +4,11 @@
 
 import hashlib
 from typing import Optional
+
 from jose import jwt
 
 from app.core.config import settings
+
 
 def make_password(raw_password: str) -> str:
     assert raw_password
@@ -26,7 +28,9 @@ def generate_password_reset_token(email: str) -> str:
     expires = now + delta
     exp = expires.timestamp()
     encoded_jwt = jwt.encode(
-        {"exp": exp, "nbf": now, "sub": email}, settings.SECRET_KEY, algorithm="HS256",
+        {"exp": exp, "nbf": now, "sub": email},
+        settings.SECRET_KEY,
+        algorithm="HS256",
     )
     return encoded_jwt
 
@@ -37,4 +41,3 @@ def verify_password_reset_token(token: str) -> Optional[str]:
         return decoded_token["email"]
     except jwt.JWTError:
         return None
-

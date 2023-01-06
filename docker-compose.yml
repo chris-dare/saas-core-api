@@ -45,6 +45,8 @@ services:
     environment:
       FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
+      MAILGUN_BASE_URL: ${MAILGUN_BASE_URL-""}
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY-""}
       POSTGRES_DB: ${POSTGRES_DB?Variable not set}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
       POSTGRES_PORT: ${POSTGRES_PORT?Variable not set}
@@ -55,7 +57,11 @@ services:
       SENTRY_DSN: ${SENTRY_DSN?Variable not set}
       SERVER_NAME: ${PROJECT_NAME?Variable not set}
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS?Variable not set}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY-""}
       SEGMENT_WRITE_KEY: ${SEGMENT_WRITE_KEY?Variable not set}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID-""}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN-""}
+      TWILIO_MESSAGING_SERVICE_SID: ${TWILIO_MESSAGING_SERVICE_SID-""}
 
     volumes:
       - ./backend:/app

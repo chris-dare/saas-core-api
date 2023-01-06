@@ -7,6 +7,7 @@ from app import models
 from app.core.config import settings
 from app.core.security import generate_otp_code
 from app.crud.base import CRUDBase
+from app.utils.messaging import ModeOfMessageDelivery, send_sms, send_email
 
 
 class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
@@ -39,8 +40,13 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
             .all()
         )
 
-    def send_otp(self, db: Session, *, user: models.User) -> bool:
-        otp = self.get_user_otp(db=db, user=user)
+    def send_otp(self, db: Session, *, user: models.User, mode: ModeOfMessageDelivery == ModeOfMessageDelivery.SMS, message: str = None, otp: models.OTP = None,) -> bool:
+        from app import crud
+        if not otp:
+            otp: models.OTP = self.get_user_otp(db=db, user=user)
+        if not message:
+            message = f"Your OTP is {otp.code}"
+        crud.user.notify(user=user, message=message, subject="Your verification code", mode=mode)
         return True
 
 

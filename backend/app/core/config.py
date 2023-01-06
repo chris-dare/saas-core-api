@@ -25,6 +25,8 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    MAILGUN_BASE_URL: Optional[str] = None
+    MAILGUN_API_KEY: Optional[str] = None
     PROJECT_NAME: str
     SENTRY_DSN: Optional[HttpUrl] = None
 
@@ -38,6 +40,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
+    SENDGRID_API_KEY: Optional[str] = None
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
@@ -85,6 +88,9 @@ class Settings(BaseSettings):
     SEGMENT_WRITE_KEY: Optional[
         str
     ] = None  # TODO: Implement: https://segment.com/docs/connections/sources/catalog/libraries/server/python/quickstart/
+    TWILIO_ACCOUNT_SID: Optional[str] = ""
+    TWILIO_AUTH_TOKEN: Optional[str] = ""
+    TWILIO_MESSAGING_SERVICE_SID: Optional[str] = ""
 
     class Config:
         case_sensitive = True
