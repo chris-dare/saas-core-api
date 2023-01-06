@@ -59,3 +59,27 @@ def get_current_active_superuser(
             status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+def get_organization(
+    organization_id: str,
+    db: Session = Depends(get_db),
+) -> models.Organization:
+    organization = crud.organization.get(db=db, uuid=organization_id)
+    # TODO: Catch object not found exception
+    return organization
+
+
+def get_adminstrative_organization(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    organization = Depends(get_organization),
+) -> models.Organization:
+    # check if user belongs to organization
+    # ...and has administrative rights to manage the organization
+    user_membership = crud.organization_member.get_multi_by_owner(
+        db=db,
+        user_id=current_user.uuid,
+        # organization_id=organization.id
+    )
+    return organization

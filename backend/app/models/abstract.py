@@ -12,6 +12,7 @@ from sqlmodel import Column, DateTime, Field, SQLModel
 class TimeStampedModel(SQLModel):
     uuid: uuid_pkg.UUID = Field(
         default_factory=uuid_pkg.uuid4,
+        unique=True,
         index=True,
         nullable=False,
     )
