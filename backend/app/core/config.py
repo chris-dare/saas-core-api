@@ -25,6 +25,8 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    MAILGUN_BASE_URL: Optional[str] = None
+    MAILGUN_API_KEY: Optional[str] = None
     PROJECT_NAME: str
     SENTRY_DSN: Optional[HttpUrl] = None
 

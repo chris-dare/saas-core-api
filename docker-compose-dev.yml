@@ -62,6 +62,8 @@ services:
     environment:
       FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
+      MAILGUN_BASE_URL: ${MAILGUN_BASE_URL-""}
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY-""}
       POSTGRES_DB: ${POSTGRES_DB?Variable not set}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
       POSTGRES_PORT: ${POSTGRES_PORT?Variable not set}

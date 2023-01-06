@@ -5,6 +5,7 @@
 from enum import Enum
 from typing import Any, List, Optional, Union
 
+import requests
 from pydantic import BaseModel, EmailStr
 
 from app.core.config import settings
@@ -13,6 +14,7 @@ from app.core.config import settings
 class MessagingProviders(Enum):
     TWILIO = "twilio"
     SENDGRID = "sendgrid"
+    MAILGUN = "mailgun"
 
 
 class ModeOfMessageDelivery(Enum):
@@ -50,6 +52,9 @@ class MessageClient:
             from sendgrid import SendGridAPIClient
 
             self.client = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        elif provider == MessagingProviders.MAILGUN:
+            self.api_key = settings.MAILGUN_API_KEY
+            self.api_base_url = settings.MAILGUN_BASE_URL
         else:
             raise Exception("Unsupported messaging provider")
 
@@ -103,6 +108,24 @@ class EmailMessageClient(MessageClient):
                 response = self.client.send(message)
             except Exception as e:
                 raise e
+        elif self.provider == MessagingProviders.MAILGUN:
+            recipients = recipients if isinstance(recipients, list) else [recipients]
+            mailgun_data = {
+                "from": f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>",
+                "to": recipients,
+                "subject": f"{subject}",
+            }
+            if template:
+                mailgun_data["template"] = template.dict() if isinstance(template, EmailTemplate) else template
+                mailgun_data["h:X-Mailgun-Variables"] = template_vars
+            elif message:
+                mailgun_data["text"] = message
+
+            response = requests.post(
+                f"{self.api_base_url}/messages",
+                auth=("api", self.api_key),
+                data=mailgun_data,
+            )
         else:
             raise Exception("Unsupported messaging provider")
 
