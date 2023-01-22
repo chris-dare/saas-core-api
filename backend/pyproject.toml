@@ -27,7 +27,6 @@ python-jose = {extras = ["cryptography"], version = "^3.1.0"}
 django = "^4.1.5"
 orm = "^0.3.1"
 asyncpg = "^0.27.0"
-psycopg2 = "^2.9.5"
 sqlmodel = "^0.0.8"
 phonenumbers = "^8.12.57"
 fastapi-pagination = "^0.10.0"
