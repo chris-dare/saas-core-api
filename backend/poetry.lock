@@ -1328,6 +1328,37 @@ dev = ["black", "flake8", "therapist", "tox", "twine", "wheel"]
 test = ["mock", "nose"]
 
 [[package]]
+name = "prometheus-client"
+version = "0.16.0"
+description = "Python client for the Prometheus monitoring system."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "prometheus_client-0.16.0-py3-none-any.whl", hash = "sha256:0836af6eb2c8f4fed712b2f279f6c0a8bbab29f9f4aa15276b91c7cb0d1616ab"},
+    {file = "prometheus_client-0.16.0.tar.gz", hash = "sha256:a03e35b359f14dd1630898543e2120addfdeacd1a6069c1367ae90fd93ad3f48"},
+]
+
+[package.extras]
+twisted = ["twisted"]
+
+[[package]]
+name = "prometheus-fastapi-instrumentator"
+version = "5.9.1"
+description = "Instrument your FastAPI with Prometheus metrics"
+category = "main"
+optional = false
+python-versions = ">=3.7.0,<4.0.0"
+files = [
+    {file = "prometheus-fastapi-instrumentator-5.9.1.tar.gz", hash = "sha256:3651a72f73359a28e8afb0d370ebe3774147323ee2285e21236b229ce79172fc"},
+    {file = "prometheus_fastapi_instrumentator-5.9.1-py3-none-any.whl", hash = "sha256:b5206ea9aa6975a0b07f3bf7376932b8a1b2983164b5abb04878e75ba336d9ed"},
+]
+
+[package.dependencies]
+fastapi = ">=0.38.1,<1.0.0"
+prometheus-client = ">=0.8.0,<1.0.0"
+
+[[package]]
 name = "psycopg2-binary"
 version = "2.9.5"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"

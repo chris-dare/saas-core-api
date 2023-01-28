@@ -90,6 +90,22 @@ services:
       - traefik.http.services.${STACK_NAME?Variable not set}-backend.loadbalancer.server.port=80
 
 
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    labels:
+      - traefik.enable=true
+    # networks:
+    #   example-network:
+    #     ipv4_address: 172.16.238.11
+
 volumes:
   app-db-data:
 

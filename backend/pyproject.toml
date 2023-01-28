@@ -34,6 +34,7 @@ segment-analytics-python = "^2.2.1"
 twilio = "^7.16.0"
 sendgrid = "^6.9.7"
 httpcore = "^0.16.3"
+prometheus-fastapi-instrumentator = "^5.9.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.770"
