@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
@@ -36,3 +37,6 @@ def read_main():
 
 # Register pagination middleware
 add_pagination(app)
+
+# Register prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
