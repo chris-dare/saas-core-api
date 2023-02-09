@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     OTP_EXPIRE_MINUTES: int = 15
     SERVER_NAME: str
     SERVER_HOST: AnyHttpUrl = "http://api.hypersenta.com"
+    CLIENT_APP_HOST: Optional[AnyHttpUrl] = "https://app.hypersenta.com"
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
@@ -35,6 +36,9 @@ class Settings(BaseSettings):
         if len(v) == 0:
             return None
         return v
+
+    PAYSTACK_BASE_URL: str = "https://api.paystack.co"
+    PAYSTACK_SECRET_KEY: str
 
     POSTGRES_SERVER: str
     POSTGRES_USER: str

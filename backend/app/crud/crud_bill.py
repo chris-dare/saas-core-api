@@ -18,6 +18,10 @@ class BillManager(CRUDBase[models.Bill, models.BillCreate, models.BillUpdate]):
             product = crud.course.get(db=db, uuid=obj_in.product_id)
         organization = crud.organization.get(db=db, uuid=product.organization_id)
         obj_in_data = jsonable_encoder(obj_in)
+
+        # calculate total amount
+        total_amount = product.amount * obj_in.quantity
+
         db_obj = self.model(**obj_in_data,
             customer_id=user.uuid,
             customer_name=user.full_name,
@@ -27,7 +31,8 @@ class BillManager(CRUDBase[models.Bill, models.BillCreate, models.BillUpdate]):
             organization_id=organization.uuid,
             service_or_product_name=product.course_name,
             unit_price=product.amount,
-            total_amount=product.amount * obj_in.quantity,
+            total_amount=total_amount,
+            charge=total_amount
         )
         db.add(db_obj)
         db.commit()
