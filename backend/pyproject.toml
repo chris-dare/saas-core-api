@@ -36,7 +36,6 @@ sendgrid = "^6.9.7"
 httpcore = "^0.16.3"
 prometheus-fastapi-instrumentator = "^5.9.1"
 httpx = "^0.23.3"
-pypaystack2 = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.770"
