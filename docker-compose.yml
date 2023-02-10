@@ -38,7 +38,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: backend.dockerfile
+      dockerfile: backend-prod.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-false}
