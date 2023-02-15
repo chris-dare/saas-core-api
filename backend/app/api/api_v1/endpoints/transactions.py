@@ -52,7 +52,6 @@ def update_transaction(
     db: Session = Depends(deps.get_db),
     transaction_id: str,
     transaction_in: models.TransactionUpdate,
-    organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -72,7 +71,6 @@ def read_transaction(
     *,
     db: Session = Depends(deps.get_db),
     transaction_id: int,
-    organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -91,7 +89,6 @@ def cancel_transaction(
     *,
     db: Session = Depends(deps.get_db),
     transaction_id: int,
-    organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
