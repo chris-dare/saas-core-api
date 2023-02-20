@@ -1,3 +1,4 @@
+# Dockerfile for production
 FROM chrisdare/senta-core-api-backend:latest
 
 WORKDIR /app/
