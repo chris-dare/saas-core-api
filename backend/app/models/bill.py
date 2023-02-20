@@ -80,13 +80,12 @@ class Bill(BillBase, TimeStampedModel, table=True):
         nullable=False,
         description="The ID of the customer who will be billed",
     )
-    # TODO: Add implement transaction_id once transactions are set up
-    # transaction_id: uuid_pkg.UUID = Field(
-    #     foreign_key="transactions.uuid",
-    #     index=True,
-    #     nullable=True,
-    #     description="Related successful transaction",
-    # )
+    transaction_id: uuid_pkg.UUID = Field(
+        foreign_key="transactions.uuid",
+        index=True,
+        nullable=True,
+        description="Related successful transaction",
+    )
     organization_name: str = Field(
         description="Business name", unique=False, index=True, nullable=False
     )
@@ -110,6 +109,9 @@ class Bill(BillBase, TimeStampedModel, table=True):
         default=CurrencyType.USD,
     )
     total_amount: Decimal
+    charge: Decimal = Field(
+        description="The amount to be charged to the customer. If none is provided, the total amount is used",
+    )
     unit_price: Decimal
     quantity: Optional[int] = 1
     description: Optional[str] = Field(
@@ -149,7 +151,7 @@ class BillRead(BillBase):
     organization_id: uuid_pkg.UUID
     customer_id: uuid_pkg.UUID
     product_id: uuid_pkg.UUID
-    status: Optional[BillStatusType] = BillStatusType.BILLABLE
+    status: Optional[BillStatusType]
     customer_name: str
     customer_email: str
     customer_mobile: Optional[str] = None

@@ -36,6 +36,7 @@ def upgrade() -> None:
     sa.Column('product_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('currency', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('total_amount', sa.Numeric(), nullable=False),
+    sa.Column('charge', sa.Numeric(), nullable=False),
     sa.Column('unit_price', sa.Numeric(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=True, default=1),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=False, default=""),

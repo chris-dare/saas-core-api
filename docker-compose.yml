@@ -38,15 +38,17 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: backend.dockerfile
+      dockerfile: backend-prod.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-false}
     environment:
+      CLIENT_APP_HOST: ${CLIENT_APP_HOST?Variable not set}
       FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
       MAILGUN_BASE_URL: ${MAILGUN_BASE_URL-""}
       MAILGUN_API_KEY: ${MAILGUN_API_KEY-""}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY?Variable not set}
       POSTGRES_DB: ${POSTGRES_DB?Variable not set}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
       POSTGRES_PORT: ${POSTGRES_PORT?Variable not set}
@@ -62,6 +64,7 @@ services:
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID-""}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN-""}
       TWILIO_MESSAGING_SERVICE_SID: ${TWILIO_MESSAGING_SERVICE_SID-""}
+
 
     volumes:
       - ./backend:/app

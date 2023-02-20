@@ -4,3 +4,4 @@ from .organization import Organization, OrganizationCreate, OrganizationRead, Or
 from .organization_member import OrganizationMember, OrganizationMemberCreate, OrganizationMemberRead, OrganizationMemberUpdate
 from .course import Course, CourseCreate, CourseRead, CourseUpdate
 from .bill import Bill, BillCreate, BillRead, BillUpdate
+from .transaction import Transaction, TransactionCreate, TransactionRead, TransactionUpdate
