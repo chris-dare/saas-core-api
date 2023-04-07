@@ -11,7 +11,7 @@ from app.middleware.pagination import JsonApiPage
 router = APIRouter()
 
 
-@router.get("/resolve", response_model=JsonApiPage[models.CourseRead])
+@router.get("/resolve", response_model=JsonApiPage[models.ResolvedBankAccount])
 def resolve_account_number(
     account_number: str,
     bank_code: str,
