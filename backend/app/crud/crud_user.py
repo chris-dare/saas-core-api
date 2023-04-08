@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.security import get_password_hash, verify_password
 from app.core.config import settings
 from app.crud.base import CRUDBase
-from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate
+from app.models.user import User, UserCreate, UserUpdate
 from app.utils.security import check_password, make_password
 from app.utils.messaging import ModeOfMessageDelivery, send_sms
 
