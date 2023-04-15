@@ -5,3 +5,6 @@ from .organization_member import OrganizationMember, OrganizationMemberCreate, O
 from .course import Course, CourseCreate, CourseRead, CourseUpdate
 from .bill import Bill, BillCreate, BillRead, BillUpdate
 from .transaction import Transaction, TransactionCreate, TransactionRead, TransactionUpdate
+from .transaction import PaymentServiceProviderType
+from .subaccount import SubAccount, SubAccountCreate, SubAccountRead, SubAccountUpdate
+from .bank import PaystackBank, ResolvedBankAccount

@@ -105,7 +105,7 @@ class Transaction(TransactionBase, TimeStampedModel, table=True):
     customer_email: EmailStr = Field(
         description="User's email address", unique=False, index=True, nullable=False
     )
-    customer_mobile: EmailStr = Field(
+    customer_mobile: str = Field(
         description="User's phone number", unique=False, index=True, nullable=True
     )
     customer_id: uuid_pkg.UUID = Field(
