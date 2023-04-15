@@ -79,14 +79,14 @@ def sign_up(
 
 @router.post("/activate", response_model=models.UserRead)
 def activate_user(
-    user_id: str = Body(...),
+    email: str = Body(...),
     otp_code: str = Body(...),
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """
     Activates a newly created user via their OTP
     """
-    user = crud.user.get_by_uuid(db=db, uuid=user_id)
+    user = crud.user.get_by_email(db=db, email=email)
     otp: models.OTP = crud.otp.get_user_otp(db=db, user=user)
     if not otp:
         raise HTTPException(

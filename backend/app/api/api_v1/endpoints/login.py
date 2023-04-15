@@ -44,12 +44,12 @@ def login_access_token(
     "/auth/generate-otp",
 )
 def generate_otp(
-    user_id: str = Body(...),
+    email: str = Body(...),
     mode: str = Body(...),  # email or SMS
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Generates an OTP for 2FA or user verification/activation"""
-    user = crud.user.get_by_uuid(db=db, uuid=user_id)
+    user = crud.user.get_by_email(db=db, email=email)
     otp = crud.otp.create_with_owner(
         db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user
     )
