@@ -6,9 +6,10 @@ from sqlalchemy.orm import Session
 from app.core.security import get_password_hash, verify_password
 from app.core.config import settings
 from app.crud.base import CRUDBase
+from app import models
 from app.models.user import User, UserCreate, UserUpdate
 from app.utils.security import check_password, make_password
-from app.utils.messaging import ModeOfMessageDelivery, send_sms
+from app.utils.messaging import ModeOfMessageDelivery, send_sms, send_email
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -18,23 +19,47 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
         return db.query(User).filter(User.uuid == uuid).first()
 
-    def create(self, db: Session, *, obj_in: UserCreate, notify: bool = True) -> User:
-        db_obj: User = User(
-            email=obj_in.email,
+    def create(self, db: Session, *, obj_in: UserCreate, notify: bool = True, is_superuser = False,) -> User:
+        new_user: User = User(
+            **obj_in.dict(),
             hashed_password=get_password_hash(obj_in.password),
-            full_name=obj_in.full_name,
-            is_superuser=obj_in.is_superuser,
+            is_superuser=is_superuser,
         )
-        db.add(db_obj)
+        db.add(new_user)
         db.commit()
-        with db_obj as new_user:
-            if notify:
-                self.notify(db_obj, message=f"Hi {new_user.full_name}, welcome to {settings.PROJECT_NAME}")
-        db.refresh(db_obj)
-        return db_obj
+        # create a new organization for the user
+        organization = self.create_organization(
+            db=db,
+            organization_name=obj_in.email,
+            owner=new_user,
+            commit=True,
+        )
+        
+        # set the user's last used organization so it can be retrieved by the client app
+        db.refresh(new_user)
+        if notify:
+            self.notify(
+                user=new_user,
+                subject="welcome to {settings.PROJECT_NAME}",
+            message=f"Hi {new_user.full_name}, welcome to {settings.PROJECT_NAME}")
+        return new_user
+
+    def create_organization(self, db: Session, organization_name: str, owner: User, commit: bool = True):
+        from app.crud.crud_organization import organization as organization_manager
+        organization_create = models.OrganizationCreate(
+            name=organization_name,
+            mobile=owner.mobile,
+            email=owner.email,
+        )
+        return organization_manager.create_with_owner(
+            db=db,
+            obj_in=organization_create,
+            user=owner,
+            commit=commit,
+        )
 
     def update(
-        self, db: Session, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
+        self, db: Session, *, new_user: User, obj_in: Union[UserUpdate, Dict[str, Any]]
     ) -> User:
         if isinstance(obj_in, dict):
             update_data = obj_in
@@ -44,7 +69,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             hashed_password = get_password_hash(update_data["password"])
             del update_data["password"]
             update_data["hashed_password"] = hashed_password
-        return super().update(db, db_obj=db_obj, obj_in=update_data)
+        return super().update(db, new_user=new_user, obj_in=update_data)
 
     def authenticate(self, db: Session, *, email: str, password: str) -> Optional[User]:
         user = self.get_by_email(db, email=email)

@@ -71,14 +71,10 @@ def sign_up(
     Create new user without the need to be logged in.
     """
     try:
-        with Session(engine) as session:
-            user = models.User.from_orm(user_in)
-            session.add(user)
-            session.commit()
-            session.refresh(user)
-            return user
+        user = crud.user.create(db=db, obj_in=user_in)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"{e}")
+    return user
 
 
 @router.post("/activate", response_model=models.UserRead)
