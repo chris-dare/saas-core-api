@@ -1,3 +1,4 @@
+import datetime
 from typing import Any
 
 from db.session import engine
@@ -7,8 +8,10 @@ from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 from sqlmodel import select
 
-from app import crud, models
+from app import crud, models, schemas
 from app.api import deps
+from app.core import security
+from app.core.config import settings
 from app.middleware.pagination import JsonApiPage
 
 router = APIRouter()
@@ -61,7 +64,7 @@ def read_user_me(
     return current_user
 
 
-@router.post("/sign-up", response_model=models.UserRead)
+@router.post("/sign-up", response_model=models.NewUserRead)
 def sign_up(
     *,
     db: Session = Depends(deps.get_db),
@@ -71,26 +74,28 @@ def sign_up(
     Create new user without the need to be logged in.
     """
     try:
-        with Session(engine) as session:
-            user = models.User.from_orm(user_in)
-            session.add(user)
-            session.commit()
-            session.refresh(user)
-            return user
+        user = crud.user.create(db=db, obj_in=user_in)
+        return models.NewUserRead(
+            **user.dict(),
+            access_token=security.create_access_token(
+                subject=user.uuid, expires_delta=datetime.timedelta(minutes=60) # authenticate the user for 1 hour after sign up
+            ),
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"{e}")
+    return user
 
 
 @router.post("/activate", response_model=models.UserRead)
 def activate_user(
-    user_id: str = Body(...),
+    email: str = Body(...),
     otp_code: str = Body(...),
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """
     Activates a newly created user via their OTP
     """
-    user = crud.user.get_by_uuid(db=db, uuid=user_id)
+    user = crud.user.get_by_email(db=db, email=email)
     otp: models.OTP = crud.otp.get_user_otp(db=db, user=user)
     if not otp:
         raise HTTPException(

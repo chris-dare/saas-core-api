@@ -11,7 +11,7 @@ from app.crud.base import CRUDBase
 
 class OrganizationManager(CRUDBase[models.Organization, models.OrganizationCreate, models.OrganizationUpdate]):
     def create_with_owner(
-        self, db: Session, *, obj_in: models.OrganizationCreate, user: models.User
+        self, db: Session, *, obj_in: models.OrganizationCreate, user: models.User, commit=True,
     ) -> models.Organization:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data,
@@ -19,9 +19,14 @@ class OrganizationManager(CRUDBase[models.Organization, models.OrganizationCreat
             owner_first_name=user.first_name,
             owner_last_name=user.last_name,
         )
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        if commit:
+            db.add(db_obj)
+            user.last_used_organization_id = db_obj.uuid
+            user.last_used_organization_name = db_obj.name
+            db.add(user)
+            db.commit()
+            # TODO: Add owner as member of newly created organization
+            db.refresh(db_obj)
         return db_obj
 
 

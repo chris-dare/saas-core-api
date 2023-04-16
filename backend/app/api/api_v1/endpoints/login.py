@@ -1,15 +1,17 @@
 from datetime import timedelta
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
 from app.core import security
 from app.core.config import settings
-from app.exceptions import APIErrorMessage
+from app.exceptions import get_api_error_message, ErrorCode
+from app.utils.messaging import ModeOfMessageDelivery
 
 router = APIRouter()
 
@@ -21,16 +23,19 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    error_response = APIErrorMessage()
     user = crud.user.authenticate(
         db, email=form_data.username, password=form_data.password
     )
     if not user:
-        error_response.message = "Incorrect email or password"
-        raise HTTPException(status_code=400, detail=error_response.dict())
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.INCORRECT_EMAIL_OR_PASSWORD)
+        )
     elif not crud.user.is_active(user):
-        error_response.message = "Inactive user"
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.INACTIVE_USER)
+        )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(
@@ -44,20 +49,21 @@ def login_access_token(
     "/auth/generate-otp",
 )
 def generate_otp(
-    user_id: str = Body(...),
+    email: str = Body(...),
     mode: str = Body(...),  # email or SMS
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Generates an OTP for 2FA or user verification/activation"""
-    user = crud.user.get_by_uuid(db=db, uuid=user_id)
+    user = crud.user.get_by_email(db=db, email=email)
     otp = crud.otp.create_with_owner(
         db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user
     )
-    is_otp_message_sent = crud.otp.send_otp(db=db, user=user, otp=otp)
+    is_otp_message_sent = False
+    is_otp_message_sent = crud.otp.send_otp(db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL)
     if not is_otp_message_sent:
         raise HTTPException(
             status_code=400,
-            detail="Sorry, we had trouble sending your verification code. Please try again",
+            detail=get_api_error_message(error_code=ErrorCode.FAILED_TO_SEND_OTP),
         )
     response = {
         "success": is_otp_message_sent,
@@ -65,8 +71,31 @@ def generate_otp(
     }
     return response
 
+@router.get("/auth/verify-user-status", response_model=models.UserPublicRead)
+def verify_user_status(
+    email: Optional[EmailStr] = None,
+    mobile: Optional[str] = None,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """Verifies user status"""
+    if not email and not mobile:
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.MISSING_EMAIL_OR_MOBILE),
+        )
+    if email:
+        user = crud.user.get_by_email(db=db, email=email)
+    if mobile:
+        user = crud.user.get_by_mobile(db=db, mobile=mobile)
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.USER_NOT_FOUND),
+        )
+    return user
 
-@router.post("/login/test-token", response_model=schemas.User)
+
+@router.post("/login/test-token", response_model=models.User)
 def test_token(current_user: models.User = Depends(deps.get_current_user)) -> Any:
     """
     Test access token
