@@ -25,7 +25,7 @@ class UserBase(SQLModel):
     full_name: Optional[str] = Field(description="User's full name", nullable=False)
     last_used_organization_name: Optional[str] = Field(description="Name of last used organization", nullable=True)
     last_used_organization_id: Optional[uuid_pkg.UUID] = Field(description="UUID of last used organization", nullable=True)
-    mobile: str = Field(
+    mobile: Optional[str] = Field(
         regex=r"^\+?1?\d{9,15}$",
         index=True,
         nullable=True,
@@ -71,13 +71,14 @@ class User(UserBase, TimeStampedModel, table=True):
     ) -> Any:
         mobile_number = values.get("mobile")
         if not mobile_number:
-            return v  # so this can be excluded as an unset property in an update
+            return v  # since mobile is optional, return None or "" if not present
         national_mobile_number = ""
         try:
             national_mobile_number = parse_mobile_number(
                 phone_number=mobile_number, international_format=False
             )
         except phonenumbers.NumberParseException:
+            # TODO: log error on sentry
             pass
         return national_mobile_number
 
@@ -94,7 +95,7 @@ class UserCreate(UserBase):
     uuid: uuid_pkg.UUID = uuid_pkg.uuid4()
     email: EmailStr
     password: str = Field(description="Hash of user's password")
-    mobile: Optional[str] = ""
+    mobile: Optional[str] = None
     first_name: str = Field(description="User's first name", nullable=False)
     last_name: str = Field(description="User's last name", nullable=False)
     # if org name is available, should be used to create organization for user
