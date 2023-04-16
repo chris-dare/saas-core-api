@@ -116,6 +116,8 @@ class UserRead(UserBase, TimeStampedModel):
     national_mobile_number: Optional[str] = Field(
         description="National calling format for the user's phone number"
     )
+    last_used_organization_name: Optional[str] = Field(description="Name of last used organization", nullable=True)
+    last_used_organization_id: Optional[uuid_pkg.UUID] = Field(description="UUID of last used organization", nullable=True)
 
 class NewUserRead(UserRead, Token):
     """Model with access token details to authenticate new users before verifying their email
