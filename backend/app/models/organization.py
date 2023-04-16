@@ -45,12 +45,14 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
     )
     owner_first_name: str = Field(description="Owner's first name", nullable=False)
     owner_last_name: str = Field(description="Owner's last name", nullable=False)
-    mobile: str = Field(
+    mobile: Optional[str] = Field(
         regex=r"^\+?1?\d{9,15}$",
         description="International country calling format for owner's phone number",
+        nullable=True,
     )
-    national_mobile_number: str = Field(
-        description="National calling format for the owner's phone number"
+    national_mobile_number: Optional[str] = Field(
+        description="National calling format for the owner's phone number",
+        nullable=True,
     )
     email: EmailStr = Field(
         description="Owner's email address", index=True, nullable=False
@@ -86,8 +88,8 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
 
 
 class OrganizationCreate(OrganizationBase):
-    mobile: str
-    national_mobile_number: Optional[str] = ""
+    mobile: Optional[str] = None
+    national_mobile_number: Optional[str] = None
     email: str
     line_address: Optional[str] = ""
     region: str = ""

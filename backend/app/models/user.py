@@ -32,9 +32,6 @@ class UserBase(SQLModel):
         unique=True,
         description="International country calling format for user's phone number",
     )
-    national_mobile_number: Optional[str] = Field(
-        nullable=True, description="National calling format for the user's phone number"
-    )
     email: EmailStr = Field(
         description="User's email address", index=True, nullable=False, unique=True
     )
@@ -53,7 +50,9 @@ class User(UserBase, TimeStampedModel, table=True):
         description="Internal database id for User table. Not to be exposed to client apps or used as foreign key references",
         default=None,
     )
-    full_name: Optional[str] = Field(index=True, nullable=False)
+    national_mobile_number: Optional[str] = Field(
+        nullable=True, description="National calling format for the user's phone number"
+    )
     is_active: bool = Field(
         description="Flag to mark user's active status", default=False
     )
@@ -115,7 +114,7 @@ class UserRead(UserBase, TimeStampedModel):
     full_name: str = Field(index=True, nullable=False)
     is_active: bool
     last_login: Optional[datetime] = None
-    national_mobile_number: str = Field(
+    national_mobile_number: Optional[str] = Field(
         description="National calling format for the user's phone number"
     )
 
