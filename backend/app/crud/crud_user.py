@@ -16,6 +16,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(User).filter(User.email == email).first()
 
+    def get_by_mobile(self, db: Session, *, mobile: str) -> Optional[User]:
+        return db.query(User).filter(User.mobile == mobile).first()
+
     def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
         return db.query(User).filter(User.uuid == uuid).first()
 
@@ -34,7 +37,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             owner=new_user,
             commit=True,
         )
-        
+
         # set the user's last used organization so it can be retrieved by the client app
         db.refresh(new_user)
         if notify:
