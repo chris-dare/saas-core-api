@@ -46,8 +46,7 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
             otp: models.OTP = self.get_user_otp(db=db, user=user)
         if not message:
             message = f"Your OTP is {otp.code}"
-        crud.user.notify(user=user, message=message, subject="Your verification code", mode=mode)
-        return True
+        return crud.user.notify(user=user, message=message, subject="Your verification code", mode=mode)
 
 
 otp = CRUDOtp(models.OTP)

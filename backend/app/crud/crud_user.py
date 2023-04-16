@@ -101,16 +101,18 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db.refresh(user)
         return user
 
-    def notify(self, user: User, message: str, subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS) -> None:
+    def notify(self, user: User, message: str, subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS) -> bool:
         """Sends user a notification message"""
+        message_delivery_status: bool = False
         if isinstance(mode, str):
             mode = ModeOfMessageDelivery(mode)
         if mode == ModeOfMessageDelivery.SMS:
             send_sms(mobile=user.mobile, message=message)
         elif mode == ModeOfMessageDelivery.EMAIL:
-            send_email(recipients=user.email, message=message, subject=subject)
+            message_delivery_status = send_email(recipients=user.email, message=message, subject=subject)
         else:
             raise Exception("Unsupported message delivery mode!")
+        return message_delivery_status
 
     def is_active(self, user: User) -> bool:
         return user.is_active

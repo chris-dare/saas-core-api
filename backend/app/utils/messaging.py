@@ -151,6 +151,15 @@ def send_email(
 ):
     client = EmailMessageClient(provider=provider)
     recipients = recipients if isinstance(recipients, list) else [recipients]
-    return client.send(
-        recipients=recipients, subject=subject, template=template, message=message
-    )
+    message_delivery_status = False
+    try:
+        response = client.send(
+            recipients=recipients, subject=subject, template=template, message=message
+        )
+        if response.status_code >= 200 or response.status_code < 300:
+            message_delivery_status = True
+    except Exception as e:
+        # TODO: Log this error via Sentry
+        pass
+    finally:
+        return message_delivery_status
