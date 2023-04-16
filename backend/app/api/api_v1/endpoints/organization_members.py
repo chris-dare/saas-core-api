@@ -32,7 +32,7 @@ def read_organization_members(
     return paginate(organizations)
 
 
-@router.post("/organizations//{organization_id}/members", response_model=models.OrganizationRead)
+@router.post("/{organization_id}/members", response_model=models.OrganizationRead)
 def create_organization_member(
     *,
     db: Session = Depends(deps.get_db),
@@ -47,7 +47,7 @@ def create_organization_member(
     return organization
 
 
-@router.put("/organizations//{organization_id}/members/{member_id}", response_model=models.OrganizationRead)
+@router.put("/{organization_id}/members/{member_id}", response_model=models.OrganizationRead)
 def update_organization_member(
     *,
     db: Session = Depends(deps.get_db),
@@ -68,7 +68,7 @@ def update_organization_member(
     return organization
 
 
-@router.get("/organizations/{organization_id}/members/{member_id}", response_model=models.OrganizationRead)
+@router.get("/{organization_id}/members/{member_id}", response_model=models.OrganizationRead)
 def read_organization(
     *,
     db: Session = Depends(deps.get_db),
@@ -87,7 +87,7 @@ def read_organization(
     return organization
 
 
-@router.delete("/organizations//{organization_id}/members/{member_id}", response_model=models.OrganizationRead)
+@router.delete("/{organization_id}/members/{member_id}", response_model=models.OrganizationRead)
 def delete_organization(
     *,
     db: Session = Depends(deps.get_db),
