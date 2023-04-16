@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 
 import phonenumbers
 import sqlalchemy as sa
-from pydantic import EmailStr, root_validator, validator
+from pydantic import BaseModel, EmailStr, root_validator, validator
 from sqlmodel import Column, DateTime, Field, SQLModel
 
 from app.utils.parser import parse_mobile_number
@@ -118,6 +118,13 @@ class UserRead(UserBase, TimeStampedModel):
         description="National calling format for the user's phone number"
     )
 
+
+class UserPublicRead(BaseModel):
+    """Used to check the user's active status
+    """
+    is_active: bool = Field(
+        description="Flag to mark user's active status", default=False
+    )
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):

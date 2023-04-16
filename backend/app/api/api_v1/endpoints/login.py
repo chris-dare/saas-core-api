@@ -1,15 +1,17 @@
 from datetime import timedelta
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
 from app.core import security
 from app.core.config import settings
-from app.exceptions import APIErrorMessage
+from app.exceptions import get_api_error_message, ErrorCode
+from app.utils.messaging import ModeOfMessageDelivery
 
 router = APIRouter()
 
@@ -64,6 +66,29 @@ def generate_otp(
         "otp": otp, # TODO: Exclude from API once Twilio funding is secured
     }
     return response
+
+@router.get("/auth/verify-user-status", response_model=models.UserPublicRead)
+def verify_user_status(
+    email: Optional[EmailStr] = None,
+    mobile: Optional[str] = None,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """Verifies user status"""
+    if not email and not mobile:
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.MISSING_EMAIL_OR_MOBILE),
+        )
+    if email:
+        user = crud.user.get_by_email(db=db, email=email)
+    if mobile:
+        user = crud.user.get_by_mobile(db=db, mobile=mobile)
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.USER_NOT_FOUND),
+        )
+    return user
 
 
 @router.post("/login/test-token", response_model=schemas.User)
