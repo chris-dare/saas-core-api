@@ -1,5 +1,6 @@
 import datetime
 from typing import Any, Dict, Optional, Union
+import uuid as uuid_pkg
 
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def create(self, db: Session, *, obj_in: UserCreate, notify: bool = True, is_superuser = False,) -> User:
         new_user: User = User(
             **obj_in.dict(),
+            uuid=uuid_pkg.uuid4(),
+            created_at=datetime.datetime.now(),
+            updated_at=datetime.datetime.now(),
+            full_name=f"{obj_in.first_name} {obj_in.last_name}",
             hashed_password=get_password_hash(obj_in.password),
             is_superuser=is_superuser,
         )
@@ -44,6 +49,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             self.notify(
                 user=new_user,
                 subject="welcome to {settings.PROJECT_NAME}",
+                mode=ModeOfMessageDelivery.EMAIL,
             message=f"Hi {new_user.full_name}, welcome to {settings.PROJECT_NAME}")
         return new_user
 

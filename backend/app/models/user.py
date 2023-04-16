@@ -22,9 +22,6 @@ from .abstract import TimeStampedModel
 class UserBase(SQLModel):
     first_name: str = Field(description="User's first name", nullable=False)
     last_name: str = Field(description="User's last name", nullable=False)
-    full_name: Optional[str] = Field(description="User's full name", nullable=False)
-    last_used_organization_name: Optional[str] = Field(description="Name of last used organization", nullable=True)
-    last_used_organization_id: Optional[uuid_pkg.UUID] = Field(description="UUID of last used organization", nullable=True)
     mobile: Optional[str] = Field(
         regex=r"^\+?1?\d{9,15}$",
         index=True,
@@ -50,6 +47,7 @@ class User(UserBase, TimeStampedModel, table=True):
         description="Internal database id for User table. Not to be exposed to client apps or used as foreign key references",
         default=None,
     )
+    full_name: Optional[str] = Field(description="User's full name", index=True, nullable=False)
     national_mobile_number: Optional[str] = Field(
         nullable=True, description="National calling format for the user's phone number"
     )
@@ -63,6 +61,9 @@ class User(UserBase, TimeStampedModel, table=True):
     last_login: Optional[datetime] = Field(
         sa_column=Column(DateTime(timezone=True)), nullable=True
     )
+    last_used_organization_name: Optional[str] = Field(description="Name of last used organization", nullable=True)
+    last_used_organization_id: Optional[uuid_pkg.UUID] = Field(description="UUID of last used organization", nullable=True)
+    updated_at: datetime = datetime.now()
 
     @validator("national_mobile_number", pre=True)
     def validate_national_phone_number(
@@ -91,7 +92,6 @@ class User(UserBase, TimeStampedModel, table=True):
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
-    uuid: uuid_pkg.UUID = uuid_pkg.uuid4()
     email: EmailStr
     password: str = Field(description="Hash of user's password")
     mobile: Optional[str] = None
@@ -100,8 +100,6 @@ class UserCreate(UserBase):
     # if org name is available, should be used to create organization for user
     last_used_organization_id: Optional[uuid_pkg.UUID] = None
     last_used_organization_name: Optional[str] = None
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
 
     @validator("password")
     def set_password(cls, v: str, values: Dict[str, Any]) -> Any:
