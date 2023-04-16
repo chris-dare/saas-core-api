@@ -13,6 +13,7 @@ import sqlalchemy as sa
 from pydantic import BaseModel, EmailStr, root_validator, validator
 from sqlmodel import Column, DateTime, Field, SQLModel
 
+from app.schemas import Token
 from app.utils.parser import parse_mobile_number
 from app.utils.security import make_password
 
@@ -116,6 +117,10 @@ class UserRead(UserBase, TimeStampedModel):
         description="National calling format for the user's phone number"
     )
 
+class NewUserRead(UserRead, Token):
+    """Model with access token details to authenticate new users before verifying their email
+    """
+    pass
 
 class UserPublicRead(BaseModel):
     """Used to check the user's active status
