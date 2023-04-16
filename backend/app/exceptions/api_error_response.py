@@ -34,7 +34,6 @@ class FailedToSendOTPAPIErrorMessage(APIErrorMessage):
     errors: list[Any] = [ErrorCode.FAILED_TO_SEND_OTP.name]
 
 
-
 class InvalidOTPAPIErrorMessage(APIErrorMessage):
     message: str = ErrorCode.INVALID_OTP.value
     errors: list[Any] = [ErrorCode.INVALID_OTP.name]
