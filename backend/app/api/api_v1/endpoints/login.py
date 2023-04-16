@@ -23,16 +23,19 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    error_response = APIErrorMessage()
     user = crud.user.authenticate(
         db, email=form_data.username, password=form_data.password
     )
     if not user:
-        error_response.message = "Incorrect email or password"
-        raise HTTPException(status_code=400, detail=error_response.dict())
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.INCORRECT_EMAIL_OR_PASSWORD)
+        )
     elif not crud.user.is_active(user):
-        error_response.message = "Inactive user"
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=400,
+            detail=get_api_error_message(error_code=ErrorCode.INACTIVE_USER)
+        )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(
