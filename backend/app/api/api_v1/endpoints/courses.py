@@ -13,10 +13,11 @@ router = APIRouter()
 
 @router.get("/", response_model=JsonApiPage[models.CourseRead])
 def read_courses(
+    *,
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    organization: models.Organization = Depends(deps.get_organization),
+    organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -28,7 +29,7 @@ def read_courses(
     else:
         courses = crud.course.get_multi_by_owner(
             db=db, user_id=current_user.uuid, skip=skip, limit=limit,
-            organization_id=organization.uuid,
+            organization_id=organization_id,
         )
     return paginate(courses)
 
@@ -74,13 +75,13 @@ def read_course(
     *,
     db: Session = Depends(deps.get_db),
     course_id: int,
-    organization: models.Organization = Depends(deps.get_organization),
+    organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get course by ID.
     """
-    course = crud.course.get(db=db, uuid=course_id, user_id=current_user.uuid, organization_id=organization.uuid)
+    course = crud.course.get(db=db, uuid=course_id, user_id=current_user.uuid, organization_id=organization_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     if not crud.user.is_superuser(current_user) and (course.user_id != current_user.id):
@@ -93,13 +94,13 @@ def delete_course(
     *,
     db: Session = Depends(deps.get_db),
     course_id: int,
-    organization: models.Organization = Depends(deps.get_organization),
+    organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Removes a course from the commercial space (soft delete)
     """
-    course = crud.course.get(db=db, uuid=course_id, user_id=current_user.uuid, organization_id=organization.uuid)
+    course = crud.course.get(db=db, uuid=course_id, user_id=current_user.uuid, organization_id=organization_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     if not crud.user.is_superuser(current_user) and (course.user_id != current_user.id):
