@@ -11,7 +11,7 @@ from app.middleware.pagination import JsonApiPage
 router = APIRouter()
 
 
-@router.get("/{organization_id}/courses", response_model=JsonApiPage[models.CourseRead])
+@router.get("/", response_model=JsonApiPage[models.CourseRead])
 def read_courses(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -33,22 +33,22 @@ def read_courses(
     return paginate(courses)
 
 
-@router.post("/organizations/{organization_id}/courses", response_model=models.CourseRead)
+@router.post("/", response_model=models.CourseRead)
 def create_course(
     *,
     db: Session = Depends(deps.get_db),
     course_in: models.CourseCreate,
-    organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create a new course.
     """
+    organization = deps.get_organization(organization_id=course_in.organization_id, db=db)
     course = crud.course.create_with_owner(db=db, obj_in=course_in, user=current_user, organization=organization)
     return course
 
 
-@router.put("/organizations/{organization_id}/courses/{course_id}", response_model=models.CourseRead)
+@router.put("/{course_id}", response_model=models.CourseRead)
 def update_course(
     *,
     db: Session = Depends(deps.get_db),
@@ -60,7 +60,7 @@ def update_course(
     """
     Update a course.
     """
-    course = crud.course.get(db=db, uuid=course_id)
+    course = crud.course.get(db=db, uuid=course_id, user_id=current_user.uuid, organization_id=organization.uuid)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     if not crud.user.is_superuser(current_user) and (course.user_id != current_user.id):
@@ -69,18 +69,18 @@ def update_course(
     return course
 
 
-@router.get("/organizations/{organization_id}/courses/{course_id}", response_model=models.CourseRead)
+@router.get("/{course_id}", response_model=models.CourseRead)
 def read_course(
     *,
     db: Session = Depends(deps.get_db),
     course_id: int,
-    organization_id: str,
+    organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Get organization by ID.
+    Get course by ID.
     """
-    course = crud.course.get(db=db, uuid=course_id)
+    course = crud.course.get(db=db, uuid=course_id, user_id=current_user.uuid, organization_id=organization.uuid)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     if not crud.user.is_superuser(current_user) and (course.user_id != current_user.id):
@@ -88,18 +88,18 @@ def read_course(
     return course
 
 
-@router.delete("/organizations/{organization_id}/courses/{course_id}", response_model=models.CourseRead)
+@router.delete("/{course_id}", response_model=models.CourseRead)
 def delete_course(
     *,
     db: Session = Depends(deps.get_db),
     course_id: int,
-    organization_id: str,
+    organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Removes a course from the commercial space
+    Removes a course from the commercial space (soft delete)
     """
-    course = crud.course.get(db=db, uuid=course_id)
+    course = crud.course.get(db=db, uuid=course_id, user_id=current_user.uuid, organization_id=organization.uuid)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     if not crud.user.is_superuser(current_user) and (course.user_id != current_user.id):

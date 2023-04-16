@@ -117,6 +117,7 @@ class CourseCreate(CourseBase):
     category: Optional[str] = None
     application_deadline: datetime = datetime.now()
     start_date: datetime = datetime.now()
+    organization_id: uuid_pkg.UUID = Field(description="Organization ID")
     end_date: datetime = datetime.now()
 
 
