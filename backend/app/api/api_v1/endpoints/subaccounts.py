@@ -36,7 +36,7 @@ def get_banks(
     """
     return utils.bank.get_bank_list(country=country, items_per_page=100)
 
-@router.get("", response_model=JsonApiPage[models.CourseRead])
+@router.get("", response_model=JsonApiPage[models.EventRead])
 def read_subaccounts(
     organization_id: str,
     db: Session = Depends(deps.get_db),
@@ -59,12 +59,12 @@ def read_subaccounts(
     return paginate(subaccounts)
 
 
-@router.post("", response_model=models.CourseRead)
+@router.post("", response_model=models.EventRead)
 def create_subaccount(
     *,
     organization_id: str,
     db: Session = Depends(deps.get_db),
-    subaccount_in: models.CourseCreate,
+    subaccount_in: models.EventCreate,
     organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -75,12 +75,12 @@ def create_subaccount(
     return subaccount
 
 
-@router.put("/{subaccount_id}", response_model=models.CourseRead)
+@router.put("/{subaccount_id}", response_model=models.EventRead)
 def update_subaccount(
     *,
     db: Session = Depends(deps.get_db),
     subaccount_id: str,
-    subaccount_in: models.CourseUpdate,
+    subaccount_in: models.EventUpdate,
     organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -89,14 +89,14 @@ def update_subaccount(
     """
     subaccount = crud.subaccount.get(db=db, uuid=subaccount_id)
     if not subaccount:
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail="Event not found")
     if not crud.user.is_superuser(current_user) and (subaccount.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     subaccount = crud.subaccount.update(db=db, db_obj=subaccount, obj_in=subaccount_in)
     return subaccount
 
 
-@router.get("/{subaccount_id}", response_model=models.CourseRead)
+@router.get("/{subaccount_id}", response_model=models.EventRead)
 def read_subaccount(
     *,
     db: Session = Depends(deps.get_db),
@@ -109,13 +109,13 @@ def read_subaccount(
     """
     subaccount = crud.subaccount.get(db=db, uuid=subaccount_id)
     if not subaccount:
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail="Event not found")
     if not crud.user.is_superuser(current_user) and (subaccount.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     return subaccount
 
 
-@router.delete("/{subaccount_id}", response_model=models.CourseRead)
+@router.delete("/{subaccount_id}", response_model=models.EventRead)
 def delete_subaccount(
     *,
     db: Session = Depends(deps.get_db),
@@ -128,7 +128,7 @@ def delete_subaccount(
     """
     subaccount = crud.subaccount.get(db=db, uuid=subaccount_id)
     if not subaccount:
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail="Event not found")
     if not crud.user.is_superuser(current_user) and (subaccount.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     subaccount = crud.subaccount.remove(db=db, id=id)

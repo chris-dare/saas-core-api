@@ -99,7 +99,7 @@ class Bill(BillBase, TimeStampedModel, table=True):
         description="Name of product user is being charged for", nullable=False
     )
     product_id: uuid_pkg.UUID = Field(
-        foreign_key="courses.uuid", # update this with the FK to your product
+        foreign_key="events.uuid", # update this with the FK to your product
         index=True,
         nullable=False,
         description="Product the customer is being charged for",

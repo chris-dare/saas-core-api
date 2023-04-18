@@ -2,7 +2,7 @@ from .crud_otp import otp
 from .crud_user import user
 from .crud_organization import organization
 from .crud_organization_member import organization_member
-from .crud_course import course
+from .crud_event import event
 from .crud_bill import bill
 from .crud_transaction import transaction
 from .crud_subaccount import subaccount

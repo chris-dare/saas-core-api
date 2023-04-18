@@ -50,7 +50,7 @@ def upgrade() -> None:
     sa.Column('refunded_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['bill_id'], ['bills.uuid'], ),
     sa.ForeignKeyConstraint(['customer_id'], ['users.uuid'], ),
-    sa.ForeignKeyConstraint(['product_id'], ['courses.uuid'], ),
+    sa.ForeignKeyConstraint(['product_id'], ['events.uuid'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_transactions_bill_id'), 'transactions', ['bill_id'], unique=False)

@@ -11,11 +11,11 @@ from app.crud.base import CRUDBase
 
 class BillManager(CRUDBase[models.Bill, models.BillCreate, models.BillUpdate]):
     def create_with_owner(
-        self, db: Session, *, obj_in: models.BillCreate, user: models.User, organization: models.Organization = None, product: models.Course = None,
+        self, db: Session, *, obj_in: models.BillCreate, user: models.User, organization: models.Organization = None, product: models.Event = None,
     ) -> models.Bill:
         from app import crud
         if not product:
-            product = crud.course.get(db=db, uuid=obj_in.product_id)
+            product = crud.event.get(db=db, uuid=obj_in.product_id)
         organization = crud.organization.get(db=db, uuid=product.organization_id)
         obj_in_data = jsonable_encoder(obj_in)
 
@@ -29,7 +29,7 @@ class BillManager(CRUDBase[models.Bill, models.BillCreate, models.BillUpdate]):
             customer_mobile=user.mobile,
             organization_name=organization.name,
             organization_id=organization.uuid,
-            service_or_product_name=product.course_name,
+            service_or_product_name=product.event_name,
             unit_price=product.amount,
             total_amount=total_amount,
             charge=total_amount

@@ -1,12 +1,12 @@
-"""The :mod:`app.models.course` module contains a ORMs used to persist and retrieve
-data concerning online course on HyperSenta
+"""The :mod:`app.models.event` module contains a ORMs used to persist and retrieve
+data concerning online event on HyperSenta
 
-A course typically has the following information:
+A event typically has the following information:
 1. Name
 2. Summary and full description
 3. Instructor(s)
-4. Course length in hours and minutes
-5. Number of videos/sessions in course
+4. Duration in hours and minutes
+5. Number of videos/sessions in event
 5. Category
 6. Type (online, pre-recorded or hybrid)
 7. Learning plan
@@ -47,15 +47,15 @@ class SubscriptionType(str, Enum):
     QUARTERLY = "quarterly"
 
 
-class CourseBase(SQLModel):
-    course_name: str = Field(
-        description="Name of course", nullable=False
+class EventBase(SQLModel):
+    event_name: str = Field(
+        description="Name of event", nullable=False
     )
     description: str = Field(
-        description="Detailed description of course", nullable=False, default="",
+        description="Detailed description of event", nullable=False, default="",
     )
     summary: str = Field(
-        description="One sentence description of the course (the value proposition).", nullable=False, default=""
+        description="One sentence description of the event (the value proposition).", nullable=False, default=""
     )
     currency: Optional[CurrencyType] = CurrencyType.USD
     amount: Optional[Decimal] = 0
@@ -70,7 +70,7 @@ class CourseBase(SQLModel):
     end_date: datetime
 
 
-class Course(CourseBase, TimeStampedModel, table=True):
+class Event(EventBase, TimeStampedModel, table=True):
     id: Optional[int] = Field(
         sa_column=Column(
             "id",
@@ -89,7 +89,7 @@ class Course(CourseBase, TimeStampedModel, table=True):
         foreign_key="users.uuid",
         index=True,
         nullable=False,
-        description="Course instructor",
+        description="Event instructor",
     )
     organization_name: str = Field(
         description="Business name", unique=False, index=True, nullable=False
@@ -98,19 +98,19 @@ class Course(CourseBase, TimeStampedModel, table=True):
         foreign_key="organizations.uuid",
         index=True,
         nullable=False,
-        description="User who owns the Course",
+        description="User who owns the Event",
     )
 
     __table_args__ = (
-        UniqueConstraint('course_name', 'organization_id', name='_organization_course_name'),
+        UniqueConstraint('event_name', 'organization_id', name='_organization_event_name'),
     )
 
     # meta properties
-    __tablename__ = "courses"
+    __tablename__ = "events"
 
 
-class CourseCreate(CourseBase):
-    course_name: str
+class EventCreate(EventBase):
+    event_name: str
     description: Optional[str] = ""
     summary: str
     mode_of_delivery: Optional[ModeOfDelivery] = ModeOfDelivery.ONLINE
@@ -121,7 +121,7 @@ class CourseCreate(CourseBase):
     end_date: datetime = datetime.now()
 
 
-class CourseRead(CourseBase):
+class EventRead(EventBase):
     uuid: uuid_pkg.UUID
     organization_id: uuid_pkg.UUID
     user_id: uuid_pkg.UUID
@@ -130,8 +130,8 @@ class CourseRead(CourseBase):
     keywords: Optional[Any] = None
 
 
-class CourseUpdate(CourseBase):
-    course_name: Optional[str] = None
+class EventUpdate(EventBase):
+    event_name: Optional[str] = None
     description: Optional[str] = None
     summary: Optional[str] = None
     mode_of_delivery: Optional[ModeOfDelivery] = None

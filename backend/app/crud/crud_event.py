@@ -9,10 +9,10 @@ from app.core.security import generate_otp_code
 from app.crud.base import CRUDBase
 
 
-class CourseManager(CRUDBase[models.Course, models.CourseCreate, models.CourseUpdate]):
+class EventManager(CRUDBase[models.Event, models.EventCreate, models.EventUpdate]):
     def create_with_owner(
-        self, db: Session, *, obj_in: models.CourseCreate, user: models.User, organization: models.Organization
-    ) -> models.Course:
+        self, db: Session, *, obj_in: models.EventCreate, user: models.User, organization: models.Organization
+    ) -> models.Event:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data,
             user_id=user.uuid,
@@ -28,28 +28,28 @@ class CourseManager(CRUDBase[models.Course, models.CourseCreate, models.CourseUp
     def get(
         self, db: Session, id: Optional[Any] = None, uuid: Optional[Any] = None,
         user_id: str = None, organization_id: str = None,
-    ) -> Optional[models.Course]:
+    ) -> Optional[models.Event]:
         if id:
-            course = db.query(self.model).filter(self.model.id == id).first()
+            event = db.query(self.model).filter(self.model.id == id).first()
         elif uuid:
-            course = db.query(self.model).filter(self.model.uuid == uuid).first()
+            event = db.query(self.model).filter(self.model.uuid == uuid).first()
         else:
             raise ValueError("QueryError. No id or uuid for object search provided!")
 
-        if course and user_id and course.user_id != user_id:
-            course = None
-        if course and organization_id and course.organization_id != organization_id:
-            course = None
-        return course
+        if event and user_id and event.user_id != user_id:
+            event = None
+        if event and organization_id and event.organization_id != organization_id:
+            event = None
+        return event
 
     def get_multi_by_owner(
         self, db: Session, *, user_id: str, skip: int = 0, limit: int = 100, organization_id: str = None,
-    ) -> List[models.Course]:
+    ) -> List[models.Event]:
         return (
             db.query(self.model)
             .filter(
-                models.Course.user_id == user_id,
-                models.Course.organization_id == organization_id,
+                models.Event.user_id == user_id,
+                models.Event.organization_id == organization_id,
             )
             .offset(skip)
             .limit(limit)
@@ -57,4 +57,4 @@ class CourseManager(CRUDBase[models.Course, models.CourseCreate, models.CourseUp
         )
 
 
-course = CourseManager(models.Course)
+event = EventManager(models.Event)

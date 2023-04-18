@@ -44,7 +44,7 @@ def upgrade() -> None:
     sa.Column('canceled_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['customer_id'], ['users.uuid'], ),
     sa.ForeignKeyConstraint(['organization_id'], ['organizations.uuid'], ),
-    sa.ForeignKeyConstraint(['product_id'], ['courses.uuid'], ),
+    sa.ForeignKeyConstraint(['product_id'], ['events.uuid'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_bills_customer_email'), 'bills', ['customer_email'], unique=False)
