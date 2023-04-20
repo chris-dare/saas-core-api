@@ -29,7 +29,7 @@ class BillManager(CRUDBase[models.Bill, models.BillCreate, models.BillUpdate]):
             customer_mobile=user.mobile,
             organization_name=organization.name,
             organization_id=organization.uuid,
-            service_or_product_name=product.event_name,
+            service_or_product_name=product.title,
             unit_price=product.amount,
             total_amount=total_amount,
             charge=total_amount

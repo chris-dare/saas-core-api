@@ -24,7 +24,7 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
     sa.Column('uuid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('event_name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('summary', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('currency', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
@@ -45,7 +45,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['organization_id'], ['organizations.uuid'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.uuid'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('event_name', 'organization_id', name='_organization_event_name')
+    sa.UniqueConstraint('title', 'organization_id', name='_organization_title')
     )
     op.create_index(op.f('ix_events_id'), 'events', ['id'], unique=False)
     op.create_index(op.f('ix_events_instructor_name'), 'events', ['instructor_name'], unique=False)

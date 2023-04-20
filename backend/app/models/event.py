@@ -48,7 +48,7 @@ class SubscriptionType(str, Enum):
 
 
 class EventBase(SQLModel):
-    event_name: str = Field(
+    title: str = Field(
         description="Name of event", nullable=False
     )
     description: str = Field(
@@ -102,7 +102,7 @@ class Event(EventBase, TimeStampedModel, table=True):
     )
 
     __table_args__ = (
-        UniqueConstraint('event_name', 'organization_id', name='_organization_event_name'),
+        UniqueConstraint('title', 'organization_id', name='_organization_title'),
     )
 
     # meta properties
@@ -110,7 +110,7 @@ class Event(EventBase, TimeStampedModel, table=True):
 
 
 class EventCreate(EventBase):
-    event_name: str
+    title: str
     description: Optional[str] = ""
     summary: str
     mode_of_delivery: Optional[ModeOfDelivery] = ModeOfDelivery.ONLINE
@@ -131,7 +131,7 @@ class EventRead(EventBase):
 
 
 class EventUpdate(EventBase):
-    event_name: Optional[str] = None
+    title: Optional[str] = None
     description: Optional[str] = None
     summary: Optional[str] = None
     mode_of_delivery: Optional[ModeOfDelivery] = None
