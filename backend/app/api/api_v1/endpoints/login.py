@@ -60,11 +60,6 @@ def generate_otp(
     )
     is_otp_message_sent = False
     is_otp_message_sent = crud.otp.send_otp(db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL)
-    if not is_otp_message_sent:
-        raise HTTPException(
-            status_code=400,
-            detail=get_api_error_message(error_code=ErrorCode.FAILED_TO_SEND_OTP),
-        )
     response = {
         "success": is_otp_message_sent,
         "otp": otp, # TODO: Exclude from API once Twilio funding is secured
