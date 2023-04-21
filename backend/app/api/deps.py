@@ -66,7 +66,8 @@ def get_organization(
     db: Session = Depends(get_db),
 ) -> models.Organization:
     organization = crud.organization.get(db=db, uuid=organization_id)
-    # TODO: Catch object not found exception
+    if not organization:
+        raise HTTPException(status_code=404, detail="Organization not found")
     return organization
 
 
