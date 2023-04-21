@@ -14,6 +14,8 @@ class EventManager(CRUDBase[models.Event, models.EventCreate, models.EventUpdate
         self, db: Session, *, obj_in: models.EventCreate, user: models.User, organization: models.Organization
     ) -> models.Event:
         obj_in_data = jsonable_encoder(obj_in)
+        if organization.owner_id != user.uuid:
+            raise ValueError("User must own associated organization!")
         db_obj = self.model(**obj_in_data,
             user_id=user.uuid,
             instructor_name=user.full_name,
