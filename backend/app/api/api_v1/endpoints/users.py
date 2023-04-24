@@ -111,20 +111,20 @@ def activate_user(
 
 
 @router.get("/{user_id}", response_model=models.UserRead)
-def read_user_by_id(
+async def read_user_by_id(
     user_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """
     Get a specific user by id
     """
-    with Session(engine) as session:
-        statement = select(models.User).where(models.User.uuid == user_id).first()
-        user = session.exec(statement)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        return user
+    user = await crud.user.get(db=db, uuid=user_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not crud.user.is_superuser(current_user) and (user.user_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    return user
 
 
 @router.put("/{user_id}", response_model=models.UserRead)

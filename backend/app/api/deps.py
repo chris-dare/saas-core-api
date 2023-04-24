@@ -33,8 +33,8 @@ async def get_async_db() -> AsyncSession:
             await db.close()
 
 
-def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
+async def get_current_user(
+    db: Session = Depends(get_async_db), token: str = Depends(reusable_oauth2)
 ) -> models.User:
     try:
         payload = jwt.decode(
@@ -46,7 +46,7 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    user = crud.user.get(db, uuid=token_data.sub)
+    user = await crud.user.get(db, uuid=token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -70,11 +70,11 @@ def get_current_active_superuser(
     return current_user
 
 
-def get_organization(
+async def get_organization(
     organization_id: str,
     db: Session = Depends(get_db),
 ) -> models.Organization:
-    organization = crud.organization.get(db=db, uuid=organization_id)
+    organization = await crud.organization.get(db=db, uuid=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
     return organization

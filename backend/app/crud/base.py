@@ -3,7 +3,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base_class import Base
@@ -25,32 +25,37 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    def get(
-        self, db: Session, id: Optional[Any] = None, uuid: Optional[Any] = None
+    async def get(
+        self, db: AsyncSession, id: Optional[Any] = None, uuid: Optional[Any] = None
     ) -> Optional[ModelType]:
-        if id:
-            return db.query(self.model).filter(self.model.id == id).first()
-        elif uuid:
-            return db.query(self.model).filter(self.model.uuid == uuid).first()
-        else:
-            raise ValueError("QueryError. No id or uuid for object search provided!")
+        statement = select(
+            self.model
+        ).where(
+            self.model.uuid == uuid,
+        )
+        obj = await db.execute(statement=statement)
+        return obj.scalar_one_or_none()
 
-    def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100
+    async def get_multi(
+        self, db: AsyncSession, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
-        return db.query(self.model).offset(skip).limit(limit).all()
+        statement = select(
+            self.model
+        ).offset(skip).limit(limit)
+        results = await db.execute(statement=statement)
+        return results.scalars().all() # type: ModelType | None
 
-    def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
+    async def create(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data)  # type: ignore
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-    def update(
+    async def update(
         self,
-        db: Session,
+        db: AsyncSession,
         *,
         db_obj: ModelType,
         obj_in: Union[UpdateSchemaType, Dict[str, Any]]
@@ -64,8 +69,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
     async def remove(self, db: AsyncSession, *, uuid: Optional[Any], obj: ModelType = None, soft_delete: bool = True) -> ModelType:
