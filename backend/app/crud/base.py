@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
@@ -67,15 +68,20 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    async def remove(self, db: AsyncSession, *, uuid: Optional[Any], soft_delete: bool = True) -> ModelType:
-        statement = select(
-            self.model
-        ).where(
-            self.model.uuid == uuid,
-        )
-        obj = await db.execute(statement=statement)
+    async def remove(self, db: AsyncSession, *, uuid: Optional[Any], obj: ModelType = None, soft_delete: bool = True) -> ModelType:
+        if not obj:
+            # confirm that we're deleting the right type of object for this manager class
+            statement = select(
+                self.model
+            ).where(
+                self.model.uuid == uuid,
+            )
+            obj = await db.execute(statement=statement)
+        elif not isinstance(obj, self.model):
+            raise ValueError("Technical error: Invalid object provided for deletion!")
         if soft_delete:
             obj.is_deleted = True
+            obj.deleted_at = datetime.datetime.now()
             db.add(obj)
         else:
             db.delete(obj)
