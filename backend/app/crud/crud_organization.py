@@ -2,6 +2,8 @@ from typing import List
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from app import models
 from app.core.config import settings
@@ -10,8 +12,8 @@ from app.crud.base import CRUDBase
 
 
 class OrganizationManager(CRUDBase[models.Organization, models.OrganizationCreate, models.OrganizationUpdate]):
-    def create_with_owner(
-        self, db: Session, *, obj_in: models.OrganizationCreate, user: models.User, commit=True,
+    async def create_with_owner(
+        self, db: AsyncSession, *, obj_in: models.OrganizationCreate, user: models.User, commit=True,
     ) -> models.Organization:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data,
@@ -24,9 +26,9 @@ class OrganizationManager(CRUDBase[models.Organization, models.OrganizationCreat
             user.last_used_organization_id = db_obj.uuid
             user.last_used_organization_name = db_obj.name
             db.add(user)
-            db.commit()
+            await db.commit()
             # TODO: Add owner as member of newly created organization
-            db.refresh(db_obj)
+            await db.refresh(db_obj)
         return db_obj
 
 

@@ -31,16 +31,16 @@ def read_organizations(
 
 
 @router.post("/", response_model=models.OrganizationRead)
-def create_organization(
+async def create_organization(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
     organization_in: models.OrganizationCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new organization.
     """
-    organization = crud.organization.create_with_owner(db=db, obj_in=organization_in, user=current_user)
+    organization = await crud.organization.create_with_owner(db=db, obj_in=organization_in, user=current_user)
     return organization
 
 
