@@ -12,6 +12,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.core import security
 from app.core.config import settings
+from app.utils.messaging import ModeOfMessageDelivery
 from app.middleware.pagination import JsonApiPage
 
 router = APIRouter()
@@ -65,16 +66,16 @@ def read_user_me(
 
 
 @router.post("/sign-up", response_model=models.NewUserRead)
-def sign_up(
+async def sign_up(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
     user_in: models.UserCreate,
 ) -> Any:
     """
     Create new user without the need to be logged in.
     """
     try:
-        user = crud.user.create(db=db, obj_in=user_in)
+        user = await crud.user.create(db=db, obj_in=user_in)
         return models.NewUserRead(
             **user.dict(),
             access_token=security.create_access_token(

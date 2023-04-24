@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional, Union
 import uuid as uuid_pkg
 
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
 from app.core.config import settings
@@ -23,7 +24,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
         return db.query(User).filter(User.uuid == uuid).first()
 
-    def create(self, db: Session, *, obj_in: UserCreate, notify: bool = True, is_superuser = False,) -> User:
+    async def create(self, db: AsyncSession, *, obj_in: UserCreate, notify: bool = True, is_superuser = False,) -> User:
         new_user: User = User(
             **obj_in.dict(),
             uuid=uuid_pkg.uuid4(),
@@ -34,9 +35,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             is_superuser=is_superuser,
         )
         db.add(new_user)
-        db.commit()
+        await db.commit()
         # create a new organization for the user
-        organization = self.create_organization(
+        organization = await self.create_organization(
             db=db,
             organization_name=obj_in.email,
             owner=new_user,
@@ -44,28 +45,29 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         )
 
         # set the user's last used organization so it can be retrieved by the client app
-        db.refresh(new_user)
+        await db.refresh(new_user)
         if notify:
-            self.notify(
+            await self.notify(
                 user=new_user,
                 subject="welcome to {settings.PROJECT_NAME}",
                 mode=ModeOfMessageDelivery.EMAIL,
             message=f"Hi {new_user.full_name}, welcome to {settings.PROJECT_NAME}")
         return new_user
 
-    def create_organization(self, db: Session, organization_name: str, owner: User, commit: bool = True):
+    async def create_organization(self, db: Session, organization_name: str, owner: User, commit: bool = True):
         from app.crud.crud_organization import organization as organization_manager
         organization_create = models.OrganizationCreate(
             name=organization_name,
             mobile=owner.mobile,
             email=owner.email,
         )
-        return organization_manager.create_with_owner(
+        organization = await organization_manager.create_with_owner(
             db=db,
             obj_in=organization_create,
             user=owner,
             commit=commit,
         )
+        return organization
 
     def update(
         self, db: Session, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
@@ -101,7 +103,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db.refresh(user)
         return user
 
-    def notify(self, user: User, message: str, subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS) -> bool:
+    async def notify(self, user: User, message: str, subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS) -> bool:
         """Sends user a notification message"""
         message_delivery_status: bool = False
         if isinstance(mode, str):
