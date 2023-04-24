@@ -30,15 +30,20 @@ class EventManager(CRUDBase[models.Event, models.EventCreate, models.EventUpdate
         self, db: AsyncSession, id: Optional[Any] = None, uuid: Optional[Any] = None,
         user_id: str = None, organization_id: str = None,
     ) -> Optional[models.Event]:
-        statement = select(
-            models.Event
-        ).where(
-            models.Event.uuid == uuid,
-        )
+        filter_kwargs = {}
+        if user_id:
+            filter_kwargs[str(models.Event.user_id)] = user_id
+        if organization_id:
+            filter_kwargs[str(models.Event.organization_id)] = organization_id
+        statement = select(models.Event).where(models.Event.uuid == uuid)
+        if user_id:
+            statement = statement.where(models.Event.user_id == user_id)
+        if organization_id:
+            statement = statement.where(models.Event.organization_id == organization_id)
         event = await db.execute(statement=statement)
-        if event and user_id and event.user_id != user_id:
-            event = None
-        if event and organization_id and event.organization_id != organization_id:
+        if event:
+            event = event.scalar_one_or_none()
+        else:
             event = None
         return event
 

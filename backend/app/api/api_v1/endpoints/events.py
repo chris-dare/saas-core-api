@@ -74,18 +74,19 @@ async def update_event(
 async def read_event(
     *,
     db: AsyncSession = Depends(deps.get_async_db),
-    event_id: int,
+    event_id: str,
     organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get event by ID.
     """
-    event = await crud.event.get(db=db, uuid=event_id, user_id=current_user.uuid, organization_id=organization_id)
+    try:
+        event = await crud.event.get(db=db, uuid=event_id, user_id=current_user.uuid, organization_id=organization_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"{e}")
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    if not crud.user.is_superuser(current_user) and (event.user_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
     return event
 
 
