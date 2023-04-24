@@ -3,6 +3,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base_class import Base
 
@@ -66,8 +67,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    def remove(self, db: Session, *, uuid: Optional[Any]) -> ModelType:
-        obj = db.query(self.model).get(uuid=uuid)
-        db.delete(obj)
-        db.commit()
+    async def remove(self, db: AsyncSession, *, uuid: Optional[Any], soft_delete: bool = True) -> ModelType:
+        statement = select(
+            self.model
+        ).where(
+            self.model.uuid == uuid,
+        )
+        obj = await db.execute(statement=statement)
+        if soft_delete:
+            obj.is_deleted = True
+            db.add(obj)
+        else:
+            db.delete(obj)
+        await db.commit()
         return obj
