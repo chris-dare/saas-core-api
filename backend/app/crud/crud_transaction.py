@@ -1,7 +1,9 @@
 from typing import List, Optional, Any
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.core.config import settings
@@ -12,8 +14,8 @@ import httpx
 
 
 class TransactionManager(CRUDBase[models.Transaction, models.TransactionCreate, models.TransactionUpdate]):
-    def create_with_owner(
-        self, db: Session, *, obj_in: models.TransactionCreate, user: models.User, bill: models.Bill,
+    async def create_with_owner(
+        self, db: AsyncSession, *, obj_in: models.TransactionCreate, user: models.User, bill: models.Bill,
     ) -> models.Transaction:
         """Creates a transaction for a given customer.
         Initializes a payment transaction with a 3rd party payment gateway"""
@@ -36,32 +38,66 @@ class TransactionManager(CRUDBase[models.Transaction, models.TransactionCreate, 
         )
         db_obj.initialize()
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-
-    def get_multi_by_owner(
-        self, db: Session, *, user_id: str, skip: int = 0, limit: int = 100,
-    ) -> List[models.Transaction]:
-        return (
-            db.query(self.model)
-            .filter(
-                models.Transaction.customer_id == user_id,
-            )
-            .offset(skip)
-            .limit(limit)
-            .all()
+    async def get(
+        self, db: AsyncSession, id: Optional[Any] = None, uuid: Optional[Any] = None,
+        customer_id: Optional[str] = None,
+    ) -> Optional[models.Transaction]:
+        statement = select(
+            self.model
+        ).where(
+            self.model.uuid == uuid,
         )
+        if customer_id:
+            statement = statement.where(models.Transaction.customer_id == customer_id)
+        obj = await db.execute(statement=statement)
+        return obj.scalar_one_or_none()
 
-    def remove(self, db: Session, *, uuid: Optional[Any]) -> models.Transaction:
+    async def get_multi_by_owner(
+        self, db: AsyncSession, *, customer_id: Optional[str] = None, organization_id: Optional[str] = None, skip: int = 0, limit: int = 100,
+    ) -> List[models.Bill]:
+        """Get all Transactions attributed to a customer or a vendor
+        Parameters:
+        -----------
+        db: AsyncSession
+            The database session
+        user_id: str
+            The user id
+        organization_id: str
+            The organization id
+        skip: int
+            The number of records to skip
+        limit: int
+            The number of records to return
+        Returns:
+        --------
+        List[models.Transaction]
+            A list of Transactions belonging to the customer or vendor
+        """
+        statement = select(
+            models.Transaction
+        )
+        if not organization_id and not customer_id:
+            raise ValueError("Technical error: User or organization id required!")
+        if organization_id:
+            statement = statement.where(models.Transaction.organization_id == organization_id)
+        elif customer_id:
+            statement = statement.where(models.Transaction.customer_id == customer_id)
+        statement = statement.offset(skip).limit(limit)
+        results = await db.execute(statement=statement)
+        return results.scalars().all()  # type: Transaction | None
+
+    async def cancel(self, db: AsyncSession, *, uuid: Optional[Any]) -> models.Transaction:
         """Cancels a transaction"""
-        db_obj: models.Transaction = db.query(self.model).get(uuid=uuid)
+        db_obj: models.Transaction = await self.get(db, uuid=uuid)
         db_object, action_history = db_obj.cancel()
         # TODO save action history when implemented
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
 
