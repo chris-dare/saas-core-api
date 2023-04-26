@@ -161,6 +161,8 @@ class BillRead(BillBase):
     total_amount: Optional[Decimal] = 0
     unit_price: Optional[Decimal] = 0
     quantity: Optional[int] = 0
+    paid_at: Optional[datetime] = None
+    created_at: datetime
 
 
 class BillUpdate(BillBase):
