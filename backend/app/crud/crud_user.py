@@ -25,15 +25,22 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         existing_user = await db.execute(statement)
         return existing_user.scalar_one_or_none()
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
-        return db.query(User).filter(User.email == email).first()
+        return db.query(User).filter(
+            User.email == str(email)
+        ).first()
 
     def get_by_mobile(self, db: Session, *, mobile: str) -> Optional[User]:
-        return db.query(User).filter(User.mobile == mobile).first()
+        return db.query(User).filter(
+            User.mobile == str(mobile)
+        ).first()
 
     def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
         return db.query(User).filter(User.uuid == uuid).first()
 
     async def create(self, db: AsyncSession, *, obj_in: UserCreate, notify: bool = True, is_superuser = False,) -> User:
+        existing_user = await self.get_by_email_or_mobile(db=db, email=obj_in.email, mobile=obj_in.mobile)
+        if existing_user:
+            raise ValueError("Sorry, a user with this email already exists")
         new_user: User = User(
             **obj_in.dict(),
             uuid=uuid_pkg.uuid4(),
@@ -53,7 +60,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             commit=True,
         )
 
-        # set the user's last used organization so it can be retrieved by the client app
+        # set the user's last used organization, so it can be retrieved by the client app
         await db.refresh(new_user)
         if notify:
             await self.notify(
