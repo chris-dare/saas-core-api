@@ -18,7 +18,7 @@ from app.utils.messaging import ModeOfMessageDelivery, send_sms, send_email
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
-    async def get_by_email_or_mobile(self, db: AsyncSession, *, email: EmailStr, mobile: str) -> Optional[User]:
+    async def get_by_email_or_mobile(self, db: AsyncSession, *, email: EmailStr, mobile: str = None) -> Optional[User]:
         email = str(email)
         mobile = str(mobile)
         statement = select(User).where((User.email == email) | (User.mobile == mobile))
