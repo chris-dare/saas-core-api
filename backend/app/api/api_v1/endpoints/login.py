@@ -48,18 +48,18 @@ async def login_access_token(
 @router.post(
     "/auth/generate-otp",
 )
-def generate_otp(
+async def generate_otp(
     email: str = Body(...),
     mode: str = Body(...),  # email or SMS
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """Generates an OTP for 2FA or user verification/activation"""
-    user = crud.user.get_by_email(db=db, email=email)
-    otp = crud.otp.create_with_owner(
+    user = await crud.user.get_by_email_or_mobile(db=db, email=email)
+    otp = await crud.otp.create_with_owner(
         db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user
     )
     is_otp_message_sent = False
-    is_otp_message_sent = crud.otp.send_otp(db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL)
+    is_otp_message_sent = await crud.otp.send_otp(db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL)
     response = {
         "success": is_otp_message_sent,
         "otp": otp, # TODO: Exclude from API once Twilio funding is secured

@@ -88,23 +88,23 @@ async def sign_up(
 
 
 @router.post("/activate", response_model=models.UserRead)
-def activate_user(
+async def activate_user(
     email: str = Body(...),
     otp_code: str = Body(...),
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """
     Activates a newly created user via their OTP
     """
-    user = crud.user.get_by_email(db=db, email=email)
-    otp: models.OTP = crud.otp.get_user_otp(db=db, user=user)
+    user = await crud.user.get_by_email_or_mobile(db=db, email=email)
+    otp: models.OTP = await crud.otp.get_user_otp(db=db, user=user)
     if not otp:
         raise HTTPException(
             status_code=400, detail="We couldn't verify your OTP code. Please try again"
         )
     is_verified = True if otp.code == otp_code else False
     if is_verified:
-        user = crud.user.activate(db=db, user=user)
+        user = await crud.user.activate(db=db, user=user)
     else:
         raise HTTPException(status_code=400, detail="Sorry, your OTP code is invalid")
     return user

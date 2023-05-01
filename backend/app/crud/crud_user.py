@@ -112,11 +112,11 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         await db.refresh(user)
         return user
 
-    def activate(self, db: Session, *, user: User) -> User:
+    async def activate(self, db: AsyncSession, *, user: User) -> User:
         user.is_active = True
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
 
     async def notify(self, user: User, message: str, subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS) -> bool:
