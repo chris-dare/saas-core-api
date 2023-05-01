@@ -11,30 +11,40 @@ from app.middleware.pagination import JsonApiPage
 router = APIRouter()
 
 
-@router.get("/resolve", response_model=JsonApiPage[models.ResolvedBankAccount])
-def resolve_account_number(
+@router.get("/resolve", response_model=models.ResolvedBankAccount)
+async def resolve_account_number(
     account_number: str,
     bank_code: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """Resolves the account details of a given account number and bank code
+    """Retrieves the account details of a given account number and bank code
     Raises:
-        ValueError: If the account number and bank code combination is invalid
+        HTTPException: If the account number and bank code combination are invalid
     """
-    resolved_bank_account = utils.bank.resolve_account_number(account_number=account_number, bank_code=bank_code)
+    try:
+        resolved_bank_account = await utils.bank.resolve_account_number(account_number=account_number, bank_code=bank_code)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return resolved_bank_account
 
 
 @router.get("/banks", response_model=JsonApiPage[models.PaystackBank])
-def get_banks(
-    bank_code: str,
+async def get_banks(
     country: str,
+    bank_code: Optional[str] = None,
     items_per_page: int = 100,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> List:
     """Gets a list of banks and their bank codes
     """
-    return utils.bank.get_bank_list(country=country, items_per_page=100)
+    banks = await utils.bank.get_bank_list(country=country, items_per_page=items_per_page)
+    # go through the list of banks and filter by bank code if provided
+    if bank_code:
+        for bank in banks:
+            if bank.code == bank_code:
+                return [bank]
+        raise HTTPException(status_code=404, detail="Bank code not found")
+    return paginate(banks)
 
 @router.get("", response_model=JsonApiPage[models.EventRead])
 def read_subaccounts(
