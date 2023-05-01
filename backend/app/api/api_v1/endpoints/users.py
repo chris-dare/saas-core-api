@@ -119,26 +119,3 @@ async def read_user_by_id(
     return user
 
 
-@router.put("/{user_id}", response_model=models.UserRead)
-def update_user(
-    *,
-    db: Session = Depends(deps.get_db),
-    user_id: str,
-    user_in: models.UserUpdate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Update a user
-    """
-    with Session(engine) as session:
-        # user = session.get(models.User, user_id)
-        user = session.exec(select(models.User)).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_data = user.dict(exclude_unset=True)
-        for key, value in user_data.items():
-            setattr(user, key, value)
-        session.add(user)
-        session.commit()
-        session.refresh(user)
-        return user
