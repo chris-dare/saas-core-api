@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import paginate
@@ -46,10 +46,9 @@ async def get_banks(
         raise HTTPException(status_code=404, detail="Bank code not found")
     return paginate(banks)
 
-@router.get("", response_model=JsonApiPage[models.EventRead])
-def read_subaccounts(
-    organization_id: str,
-    db: Session = Depends(deps.get_db),
+@router.get("", response_model=JsonApiPage[models.SubAccountRead])
+async def read_subaccounts(
+    db: Session = Depends(deps.get_async_db),
     skip: int = 0,
     limit: int = 100,
     organization: models.Organization = Depends(deps.get_organization),
@@ -57,40 +56,37 @@ def read_subaccounts(
 ) -> Any:
     """
     Retrieves subaccounts created under a user's organization
-    Returns all subaccounts if user is a superuser
     """
-    if crud.user.is_superuser(current_user):
-        subaccounts = crud.subaccount.get_multi(db, skip=skip, limit=limit)
-    else:
-        subaccounts = crud.subaccount.get_multi_by_owner(
-            db=db, user_id=current_user.uuid, skip=skip, limit=limit,
-            organization_id=organization.uuid,
-        )
+    if organization.owner_id != current_user.uuid:
+        raise HTTPException(status_code=403, detail="Not enough permissions. "
+                                                    "You must be the owner of this organization to perform this action")
+    subaccounts = await crud.subaccount.get_multi_by_owner(
+        db=db, user_id=current_user.uuid, skip=skip, limit=limit,
+        organization_id=organization.uuid,
+    )
     return paginate(subaccounts)
 
 
-@router.post("", response_model=models.EventRead)
-def create_subaccount(
+@router.post("", response_model=models.SubAccountRead)
+async def create_subaccount(
     *,
-    organization_id: str,
-    db: Session = Depends(deps.get_db),
-    subaccount_in: models.EventCreate,
-    organization: models.Organization = Depends(deps.get_organization),
+    db: Session = Depends(deps.get_async_db),
+    subaccount_in: models.SubAccountCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create a new subaccount.
     """
-    subaccount = crud.subaccount.create_with_owner(db=db, obj_in=subaccount_in, user=current_user, organization=organization)
+    subaccount = await crud.subaccount.create_with_owner(db=db, obj_in=subaccount_in, user=current_user)
     return subaccount
 
 
-@router.put("/{subaccount_id}", response_model=models.EventRead)
-def update_subaccount(
+@router.put("/{subaccount_id}", response_model=models.SubAccountUpdate)
+async def update_subaccount(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
     subaccount_id: str,
-    subaccount_in: models.EventUpdate,
+    subaccount_in: models.SubAccountUpdate,
     organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -102,40 +98,39 @@ def update_subaccount(
         raise HTTPException(status_code=404, detail="Event not found")
     if not crud.user.is_superuser(current_user) and (subaccount.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    subaccount = crud.subaccount.update(db=db, db_obj=subaccount, obj_in=subaccount_in)
+    subaccount = await crud.subaccount.update(db=db, db_obj=subaccount, obj_in=subaccount_in)
     return subaccount
 
 
-@router.get("/{subaccount_id}", response_model=models.EventRead)
-def read_subaccount(
+@router.get("/{subaccount_id}", response_model=models.SubAccountRead)
+async def read_subaccount(
     *,
     db: Session = Depends(deps.get_db),
-    subaccount_id: int,
+    subaccount_id: str,
     organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get organization by ID.
     """
-    subaccount = crud.subaccount.get(db=db, uuid=subaccount_id)
-    if not subaccount:
-        raise HTTPException(status_code=404, detail="Event not found")
-    if not crud.user.is_superuser(current_user) and (subaccount.user_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+    subaccount = await crud.subaccount.get(db=db, uuid=subaccount_id)
+    if not subaccount or subaccount.owner_id != current_user.uuid:
+        raise HTTPException(status_code=404, detail="Subaccount not found")
     return subaccount
 
 
-@router.delete("/{subaccount_id}", response_model=models.EventRead)
+@router.delete("/{subaccount_id}", response_model=models.SubAccountRead)
 def delete_subaccount(
     *,
     db: Session = Depends(deps.get_db),
-    subaccount_id: int,
+    subaccount_id: str,
     organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Removes a subaccount from the commercial space
     """
+    raise NotImplementedError("This endpoint is not yet implemented")
     subaccount = crud.subaccount.get(db=db, uuid=subaccount_id)
     if not subaccount:
         raise HTTPException(status_code=404, detail="Event not found")

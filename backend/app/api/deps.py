@@ -72,7 +72,7 @@ def get_current_active_superuser(
 
 async def get_organization(
     organization_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
 ) -> models.Organization:
     organization = await crud.organization.get(db=db, uuid=organization_id)
     if not organization:

@@ -1,4 +1,5 @@
 import secrets
+from decimal import Decimal
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
@@ -17,6 +18,7 @@ class Settings(BaseSettings):
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    DEFAULT_TRANSACTION_FEE: Decimal = Decimal("0.05")
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
@@ -101,3 +103,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+# ensure that transaction fees are always 5% by default
+settings.DEFAULT_TRANSACTION_FEE = Decimal(5.00)

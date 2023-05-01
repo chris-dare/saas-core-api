@@ -1,56 +1,48 @@
 from typing import List
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.core.config import settings
-from app.core.security import generate_otp_code
 from app.crud.base import CRUDBase
 
 
 class SubAccountManager(CRUDBase[models.SubAccount, models.SubAccountCreate, models.SubAccountUpdate]):
-    def create_with_owner(
-        self, db: Session, *, obj_in: models.SubAccountCreate, user: models.User, organization: models.Organization
+    async def create_with_owner(
+        self, db: AsyncSession, *, obj_in: models.SubAccountCreate, user: models.User
     ) -> models.SubAccount:
         obj_in_data = jsonable_encoder(obj_in)
+        #TODO: Create subaccount with payment service provider before saving in app db
         db_obj = self.model(**obj_in_data,
-            user_id=user.uuid,
-            instructor_name=user.full_name,
-            organization_name=organization.name,
-            organization_id=organization.uuid,
+            owner_id=user.uuid,
+            organization_name=user.last_used_organization_name,
+            organization_id=user.last_used_organization_id,
+            percentage_charge=settings.DEFAULT_TRANSACTION_FEE,
+            is_primary=False,
+            is_deleted=False,
         )
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
 
-    def get_multi_by_owner(
-        self, db: Session, *, user_id: str, skip: int = 0, limit: int = 100, organization_id: str = None,
+    async def get_multi_by_owner(
+        self, db: AsyncSession, *, user_id: str, skip: int = 0, limit: int = 100, organization_id: str = None,
     ) -> List[models.SubAccount]:
-        return (
-            db.query(self.model)
-            .filter(
-                models.SubAccount.user_id == user_id,
+        statement = select(
+            models.SubAccount
+        ).where(
+            models.SubAccount.owner_id == user_id,
+        )
+        if organization_id:
+            statement = statement.where(
                 models.SubAccount.organization_id == organization_id,
             )
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        obj = await db.execute(statement=statement)
+        return obj.scalars().all()
 
-    def get_multi_by_organization(
-        self, db: Session, *, organization_id: str, skip: int = 0, limit: int = 100,
-    ) -> List[models.SubAccount]:
-        return (
-            db.query(self.model)
-            .filter(
-                models.SubAccount.organization_id == organization_id,
-            )
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
 
 subaccount = SubAccountManager(models.SubAccount)

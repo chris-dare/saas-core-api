@@ -20,16 +20,6 @@ from .abstract import TimeStampedModel
 
 
 class SubAccountBase(SQLModel):
-    user_id: uuid_pkg.UUID = Field(
-        description="User's public UUID", nullable=False, index=True
-    )
-    is_active: Optional[bool] = True
-    organization_id: uuid_pkg.UUID = Field(
-        foreign_key="organizations.uuid",
-        index=True,
-        nullable=False,
-        description="Organization",
-    )
     business_name: str = Field(
         description="Name of business for subaccount", unique=False, index=True, nullable=False
     )
@@ -40,9 +30,6 @@ class SubAccountBase(SQLModel):
     account_number: str = Field(
         description="Code of the bank account to be used to charge the customer",
         default="",
-    )
-    percentage_charge: Decimal = Field(
-        description="Percentage of a transaction to be settled to the account",
     )
     description: str = Field(
         description="An arbitrary string attached to the object. Often useful for displaying to users",
@@ -71,7 +58,39 @@ class SubAccount(SubAccountBase, TimeStampedModel, table=True):
         ),
         description="Internal database id for SubAccount table. Not to be exposed to client apps or used as foreign key references",
     )
-    code: str = Field(description="SubAccount code", nullable=False)
+    uuid: uuid_pkg.UUID = uuid_pkg.uuid4()
+    owner_id: uuid_pkg.UUID = Field(
+        foreign_key="users.uuid",
+        description="Account owner (user)", nullable=False, index=True
+    )
+    organization_id: uuid_pkg.UUID = Field(
+        foreign_key="organizations.uuid",
+        index=True,
+        nullable=False,
+        description="Account owner's organization",
+    )
+    percentage_charge: Decimal = Field(
+        description="Percentage of a transaction to be settled to the account",
+        sa_column=sa.DECIMAL(precision=5, scale=2)
+    )
+    is_active: Optional[bool] = Field(
+        default=True,
+        description="Status on whether the subaccount is active or not",
+    )
+    is_deleted: Optional[bool] = Field(
+        default=False,
+        description="Status on whether the subaccount has been deleted or not",
+    )
+    is_verified: Optional[bool] = Field(
+        default=False,
+        description="Status on whether the subaccount has been verified or not",
+    )
+    is_primary: Optional[bool] = Field(
+        default=False,
+        description="Status on whether the subaccount is the primary account for the organization",
+    )
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
 
     # meta properties
     __tablename__ = "subaccounts"
@@ -79,22 +98,18 @@ class SubAccount(SubAccountBase, TimeStampedModel, table=True):
 
 # Properties to receive via API on creation
 class SubAccountCreate(SubAccountBase):
-    uuid: uuid_pkg.UUID = uuid_pkg.uuid4()
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
-    description: Optional[str] = Field(
-        description="An arbitrary string attached to the object. Often useful for displaying to users",
-        default="",
-    )
-
+    description: Optional[str] = ""
+    pass
 
 class SubAccountRead(SubAccountBase, TimeStampedModel):
-    uuid: str
-    user_id: str
-    code: str
+    uuid: uuid_pkg.UUID
+    organization_id: uuid_pkg.UUID
+    owner_id: str
     created_at: datetime
-    expires_at: datetime
-
+    updated_at: datetime
+    owner_id: uuid_pkg.UUID
+    percentage_charge: Decimal
 
 class SubAccountUpdate(SubAccountBase, TimeStampedModel):
+    updated_at: datetime = datetime.now()
     pass
