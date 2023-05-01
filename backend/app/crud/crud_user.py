@@ -2,6 +2,8 @@ import datetime
 from typing import Any, Dict, Optional, Union
 import uuid as uuid_pkg
 
+from pydantic import EmailStr
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +17,13 @@ from app.utils.messaging import ModeOfMessageDelivery, send_sms, send_email
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
+
+    async def get_by_email_or_mobile(self, db: AsyncSession, *, email: EmailStr, mobile: str) -> Optional[User]:
+        email = str(email)
+        mobile = str(mobile)
+        statement = select(User).where((User.email == email) | (User.mobile == mobile))
+        existing_user = await db.execute(statement)
+        return existing_user.scalar_one_or_none()
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(User).filter(User.email == email).first()
 
@@ -82,8 +91,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             update_data["hashed_password"] = hashed_password
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def authenticate(self, db: Session, *, email: str, password: str) -> Optional[User]:
-        user = self.get_by_email(db, email=email)
+    async def authenticate(self, db: AsyncSession, *, email: str, password: str) -> Optional[User]:
+        user = await self.get_by_email_or_mobile(db, email=email, mobile=None)
         if not user:
             return None
         if not check_password(hash=user.password, raw_password=password):
@@ -92,8 +101,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         # TODO: this should actually run as a background task
         user.last_login = datetime.datetime.now()
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
 
     def activate(self, db: Session, *, user: User) -> User:
