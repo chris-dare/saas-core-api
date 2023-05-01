@@ -14,8 +14,7 @@ from pydantic import BaseModel, EmailStr, root_validator, validator
 from sqlmodel import Column, DateTime, Field, SQLModel
 
 from app.schemas import Token
-from app.utils.parser import parse_mobile_number
-from app.utils.security import make_password
+
 
 from .abstract import TimeStampedModel
 
@@ -70,6 +69,7 @@ class User(UserBase, TimeStampedModel, table=True):
     def validate_national_phone_number(
         cls, v: Optional[str], values: Dict[str, Any]
     ) -> Any:
+        from app.utils import parse_mobile_number
         mobile_number = values.get("mobile")
         if not mobile_number:
             return v  # since mobile is optional, return None or "" if not present
@@ -104,6 +104,7 @@ class UserCreate(UserBase):
 
     @validator("password")
     def set_password(cls, v: str, values: Dict[str, Any]) -> Any:
+        from app.utils import make_password
         # ensure that only the hashed password of the user is saved.
         # TODO: Move this behavior to the User object manager
         return make_password(raw_password=v)

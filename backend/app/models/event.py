@@ -17,14 +17,12 @@ from datetime import datetime
 import uuid as uuid_pkg
 import orm
 import sqlalchemy as sa
-from pydantic import EmailStr, validator
 from sqlmodel import Column, Field, SQLModel, UniqueConstraint
 
 from decimal import Decimal
-from enum import Enum, IntEnum
+from enum import Enum
 
 from app.config.api_config import api_settings
-from app.utils.parser import parse_mobile_number
 
 from .abstract import TimeStampedModel
 from typing import Optional, Dict, Any

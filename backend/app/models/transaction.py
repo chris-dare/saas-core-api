@@ -28,7 +28,6 @@ from decimal import Decimal
 from enum import Enum, IntEnum
 
 from app.core.config import settings
-from app.utils.parser import parse_mobile_number
 
 from .abstract import TimeStampedModel
 from typing import Optional, Dict, Any

@@ -11,7 +11,6 @@ from pydantic import EmailStr, validator
 from sqlmodel import Column, Field, SQLModel
 
 from app.config.api_config import api_settings
-from app.utils.parser import parse_mobile_number
 
 from .abstract import TimeStampedModel
 from typing import Optional, Dict, Any
@@ -71,6 +70,7 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
     def validate_national_phone_number(
         cls, v: Optional[str], values: Dict[str, Any]
     ) -> Any:
+        from util import parse_mobile_number
         mobile_number = values.get("mobile")
         if not mobile_number:
             return v  # so this can be excluded as an unset property in an update
@@ -99,6 +99,7 @@ class OrganizationCreate(OrganizationBase):
     def validate_national_phone_number(
         cls, v: Optional[str], values: Dict[str, Any]
     ) -> Any:
+        from utils import parse_mobile_number
         mobile_number = values.get("mobile")
         if not mobile_number:
             return v  # so this can be excluded as an unset property in an update

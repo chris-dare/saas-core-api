@@ -13,7 +13,6 @@ from sqlmodel import Column, Field, SQLModel, UniqueConstraint
 from enum import Enum, IntEnum
 
 from app.config.api_config import api_settings
-from app.utils.parser import parse_mobile_number
 
 from .abstract import TimeStampedModel
 from typing import Optional, Dict, Any
