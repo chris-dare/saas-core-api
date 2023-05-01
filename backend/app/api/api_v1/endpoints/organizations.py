@@ -81,21 +81,3 @@ def read_organization(
         raise HTTPException(status_code=400, detail="Not enough permissions to view this organization")
     return organization
 
-
-@router.delete("/{id}", response_model=models.OrganizationRead)
-def delete_organization(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: str,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Sets an organization for deactivation and subsequent deletion
-    """
-    organization = crud.organization.get(db=db, uuid=id)
-    if not organization:
-        raise HTTPException(status_code=404, detail="organization not found")
-    if not crud.user.is_superuser(current_user) and (organization.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
-    organization = crud.organization.remove(db=db, id=id)
-    return organization
