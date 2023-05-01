@@ -33,25 +33,17 @@ def read_users(
 
 
 @router.put("/me", response_model=models.UserRead)
-def update_user_me(
+async def update_user(
     *,
-    db: Session = Depends(deps.get_db),
-    user: models.UserUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    db: Session = Depends(deps.get_async_db),
+    user_in: models.UserUpdate,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Update own user.
+    Update the logged in user
     """
-    with Session(engine) as session:
-        if not current_user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_data = user.dict(exclude_unset=True)
-        for key, value in user_data.items():
-            setattr(current_user, key, value)
-        session.add(current_user)
-        session.commit()
-        session.refresh(current_user)
-        return current_user
+    user = await crud.user.update(db=db, db_obj=current_user, obj_in=user_in)
+    return user
 
 
 @router.get("/me", response_model=models.UserRead)

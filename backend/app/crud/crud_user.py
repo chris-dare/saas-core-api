@@ -85,8 +85,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         )
         return organization
 
-    def update(
-        self, db: Session, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
+    async def update(
+        self, db: AsyncSession, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
     ) -> User:
         if isinstance(obj_in, dict):
             update_data = obj_in
@@ -96,7 +96,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             hashed_password = get_password_hash(update_data["password"])
             del update_data["password"]
             update_data["hashed_password"] = hashed_password
-        return super().update(db, db_obj=db_obj, obj_in=update_data)
+        updated_user = await super().update(db, db_obj=db_obj, obj_in=update_data)
+        return updated_user
 
     async def authenticate(self, db: AsyncSession, *, email: str, password: str) -> Optional[User]:
         user = await self.get_by_email_or_mobile(db, email=email, mobile=None)
