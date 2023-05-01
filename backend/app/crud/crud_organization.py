@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional, Any
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,17 +32,32 @@ class OrganizationManager(CRUDBase[models.Organization, models.OrganizationCreat
             await db.refresh(db_obj)
         return db_obj
 
-
-    def get_multi_by_owner(
-        self, db: Session, *, user_id: str, skip: int = 0, limit: int = 100
-    ) -> List[models.Organization]:
-        return (
-            db.query(self.model)
-            .filter(models.Organization.owner_id == user_id)
-            .offset(skip)
-            .limit(limit)
-            .all()
+    async def get(
+            self, db: AsyncSession, uuid: Optional[Any] = None,
+            owner_id: Optional[str] = None, name: Optional[str] = None,
+    ) -> Optional[models.Organization]:
+        statement = select(
+            models.Organization
+        ).where(
+            models.Organization.uuid == uuid,
         )
+        if owner_id:
+            statement = statement.where(
+                models.Organization.owner_id == owner_id,
+            )
+        if name:
+            statement = statement.where(
+                models.Organization.name == name,
+            )
+        obj = await db.execute(statement=statement)
+        return obj.scalar_one_or_none()
 
+    async def get_multi_by_owner(
+        self, db: AsyncSession, *, user_id: str, skip: int = 0, limit: int = 100
+    ) -> List[models.Organization]:
+        results = await db.execute(
+            select(models.Organization).where(models.Organization.owner_id == user_id).order_by(models.Organization.created_at.desc())
+        )
+        return results.scalars().all()
 
 organization = OrganizationManager(models.Organization)

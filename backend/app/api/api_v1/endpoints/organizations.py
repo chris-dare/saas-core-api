@@ -12,8 +12,8 @@ router = APIRouter()
 
 
 @router.get("/", response_model=JsonApiPage[models.OrganizationRead])
-def read_organizations(
-    db: Session = Depends(deps.get_db),
+async def read_organizations(
+    db: Session = Depends(deps.get_async_db),
     skip: int = 0,
     limit: int = 100,
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -21,12 +21,15 @@ def read_organizations(
     """
     Retrieve organizations owned by the session user
     """
-    if crud.user.is_superuser(current_user):
-        organizations = crud.organization.get_multi(db, skip=skip, limit=limit)
-    else:
-        organizations = crud.organization.get_multi_by_owner(
-            db=db, user_id=current_user.uuid, skip=skip, limit=limit
-        )
+    try:
+        if crud.user.is_superuser(current_user):
+            organizations = await crud.organization.get_multi(db, skip=skip, limit=limit)
+        else:
+            organizations = await crud.organization.get_multi_by_owner(
+                db=db, user_id=current_user.uuid, skip=skip, limit=limit
+            )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return paginate(organizations)
 
 
@@ -45,9 +48,9 @@ async def create_organization(
 
 
 @router.put("/{id}", response_model=models.OrganizationRead)
-def update_organization(
+async def update_organization(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
     id: str,
     organization_in: models.OrganizationUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -55,26 +58,24 @@ def update_organization(
     """
     Update an organization.
     """
-    organization = crud.organization.get(db=db, uuid=id)
+    organization = await crud.organization.get(db=db, uuid=id, owner_id=current_user.uuid)
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
-    if not crud.user.is_superuser(current_user) and (organization.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
-    organization = crud.organization.update(db=db, db_obj=organization, obj_in=organization_in)
+    organization = await crud.organization.update(db=db, db_obj=organization, obj_in=organization_in)
     return organization
 
 
 @router.get("/{organization_id}", response_model=models.OrganizationRead)
-def read_organization(
+async def read_organization(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
     organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get organization by public ID.
     """
-    organization = crud.organization.get(db=db, uuid=organization_id)
+    organization = await crud.organization.get(db=db, uuid=organization_id, owner_id=current_user.uuid)
     if not organization:
         raise HTTPException(status_code=404, detail="organization not found")
     if not crud.user.is_superuser(current_user) and (organization.owner_id != current_user.uuid):
