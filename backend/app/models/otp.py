@@ -22,12 +22,6 @@ class OTPBase(SQLModel):
     user_id: uuid_pkg.UUID = Field(
         description="User's public UUID", nullable=False, index=True
     )
-    expires_at: datetime = Field(
-        sa_column=Column(
-            DateTime(timezone=True),
-        ),
-        description="OTP expiry datetime",
-    )
 
 
 class OTP(OTPBase, TimeStampedModel, table=True):
@@ -43,6 +37,13 @@ class OTP(OTPBase, TimeStampedModel, table=True):
         description="Internal database id for OTP table. Not to be exposed to client apps or used as foreign key references",
     )
     code: str = Field(description="OTP code", nullable=False)
+    expires_at: Optional[datetime] = Field(
+        sa_column=Column(
+            DateTime(timezone=True),
+        ),
+        description="OTP expiry datetime",
+        default=datetime.now() + timedelta(minutes=settings.OTP_EXPIRE_MINUTES),
+    )
 
     # meta properties
     __tablename__ = "otp"
@@ -50,12 +51,7 @@ class OTP(OTPBase, TimeStampedModel, table=True):
 
 # Properties to receive via API on creation
 class OTPCreate(OTPBase):
-    uuid: uuid_pkg.UUID = uuid_pkg.uuid4()
-    expires_at: datetime = datetime.now() + timedelta(
-        minutes=settings.OTP_EXPIRE_MINUTES
-    )
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
+    pass
 
     @validator("user_id", pre=True)
     def validate_full_name(cls, v: Union[str, TimeStampedModel]) -> str:
