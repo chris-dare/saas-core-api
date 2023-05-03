@@ -12,8 +12,8 @@ from app.core.config import settings
 from app.crud.base import CRUDBase
 from app import models
 from app.models.user import User, UserCreate, UserUpdate
-from app.utils.security import check_password, make_password
-from app.utils.messaging import ModeOfMessageDelivery, send_sms, send_email
+from app.utils import check_password, make_password
+from app.utils import ModeOfMessageDelivery, send_sms, send_email
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models
 from app.core.security import generate_otp_code
 from app.crud.base import CRUDBase
-from app.utils.messaging import ModeOfMessageDelivery, send_sms, send_email
+from app.utils import ModeOfMessageDelivery, send_sms, send_email
 
 
 class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):

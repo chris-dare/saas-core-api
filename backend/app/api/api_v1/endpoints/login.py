@@ -11,7 +11,7 @@ from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.exceptions import get_api_error_message, ErrorCode
-from app.utils.messaging import ModeOfMessageDelivery
+from app.utils import ModeOfMessageDelivery
 
 router = APIRouter()
 
