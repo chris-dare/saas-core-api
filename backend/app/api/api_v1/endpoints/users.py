@@ -11,8 +11,6 @@ from sqlmodel import select
 from app import crud, models, schemas
 from app.api import deps
 from app.core import security
-from app.core.config import settings
-from app.utils.messaging import ModeOfMessageDelivery
 from app.middleware.pagination import JsonApiPage
 
 router = APIRouter()
