@@ -1,3 +1,4 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -9,13 +10,13 @@ from app.db import base  # noqa: F401
 # for more details: https://github.com/tiangolo/full-stack-fastapi-postgresql/issues/28
 
 
-def init_db(db: Session) -> None:
+async def init_db(db: AsyncSession) -> None:
     # Tables should be created with Alembic migrations
     # But if you don't want to use migrations, create
     # the tables un-commenting the next line
     # Base.metadata.create_all(bind=engine)
 
-    user = crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
+    user = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
         user_in = models.UserCreate(
             first_name="Hypersenta",
@@ -23,4 +24,4 @@ def init_db(db: Session) -> None:
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD
         )
-        user = crud.user.create(db, obj_in=user_in, is_superuser=True)  # noqa: F841
+        user = await crud.user.create(db, obj_in=user_in, is_superuser=True)  # noqa: F841

@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     def save(self, *args, **kwargs):
-        from app.utils.parser import parse_mobile_number
+        from app.utils import parse_mobile_number
 
         self.first_name = (
             self.first_name.capitalize() if self.first_name else self.first_name

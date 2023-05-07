@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from fastapi.encoders import jsonable_encoder
@@ -6,13 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.core.security import generate_otp_code
+from app.core.config import settings
 from app.crud.base import CRUDBase
-from app.utils.messaging import ModeOfMessageDelivery, send_sms, send_email
+from app.utils import ModeOfMessageDelivery, send_sms
 
 
 class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
     async def create_with_owner(
-        self, db: AsyncSession, *, obj_in: models.OTPCreate, user: models.User
+        self, db: AsyncSession, *, obj_in: models.OTPCreate = None, user: models.User,
     ) -> models.OTP:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, code=generate_otp_code())
@@ -39,9 +41,15 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         from app import crud
         if not otp:
             otp: models.OTP = await self.get_user_otp(db=db, user=user)
-        if not message:
-            message = f"Your OTP is {otp.code}"
-        message_delivery_status = await crud.user.notify(user=user, message=message, subject="Your verification code", mode=mode)
-        return message_delivery_status
+        if mode == ModeOfMessageDelivery.EMAIL:
+            subject = f"Your OTP verification code is {otp.code}"
+        elif mode == ModeOfMessageDelivery.SMS:
+            message = f"Your OTP verification code is {otp.code}"
+        client_response = await crud.user.notify(
+            user=user, message=message, subject=subject,
+            mode=mode, template=settings.EMAIL_OTP_TEMPLATE_ID,
+            template_vars={"first_name": user.first_name, "otp_code": otp.code},
+        )
+        return client_response
 
 otp = CRUDOtp(models.OTP)

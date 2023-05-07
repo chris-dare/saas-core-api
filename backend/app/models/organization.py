@@ -70,7 +70,7 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
     def validate_national_phone_number(
         cls, v: Optional[str], values: Dict[str, Any]
     ) -> Any:
-        from util import parse_mobile_number
+        from app.utils import parse_mobile_number
         mobile_number = values.get("mobile")
         if not mobile_number:
             return v  # so this can be excluded as an unset property in an update
