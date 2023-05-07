@@ -67,10 +67,10 @@ async def generate_otp(
     return response
 
 @router.get("/auth/verify-user-status", response_model=models.UserPublicRead)
-def verify_user_status(
+async def verify_user_status(
     email: Optional[EmailStr] = None,
     mobile: Optional[str] = None,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """Verifies user status"""
     if not email and not mobile:
@@ -79,9 +79,9 @@ def verify_user_status(
             detail=get_api_error_message(error_code=ErrorCode.MISSING_EMAIL_OR_MOBILE),
         )
     if email:
-        user = crud.user.get_by_email(db=db, email=email)
+        user = await crud.user.get_by_email(db=db, email=email)
     if mobile:
-        user = crud.user.get_by_mobile(db=db, mobile=mobile)
+        user = await crud.user.get_by_mobile(db=db, mobile=mobile)
     if not user:
         raise HTTPException(
             status_code=400,

@@ -24,15 +24,15 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         statement = select(User).where((User.email == email) | (User.mobile == mobile))
         existing_user = await db.execute(statement)
         return existing_user.scalar_one_or_none()
-    def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
-        return db.query(User).filter(
-            User.email == str(email)
-        ).first()
+    async def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
+        statement = select(User).where(User.email == email)
+        results = await db.execute(statement)
+        return results.scalar_one_or_none()
 
-    def get_by_mobile(self, db: Session, *, mobile: str) -> Optional[User]:
-        return db.query(User).filter(
-            User.mobile == str(mobile)
-        ).first()
+    async def get_by_mobile(self, db: AsyncSession, *, mobile: str) -> Optional[User]:
+        statement = select(User).where(User.mobile == mobile)
+        results = await db.execute(statement)
+        return results.scalar_one_or_none()
 
     def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
         return db.query(User).filter(User.uuid == uuid).first()
