@@ -13,7 +13,7 @@ from app.crud.base import CRUDBase
 from app import models
 from app.models.user import User, UserCreate, UserUpdate
 from app.utils import check_password, make_password
-from app.utils import ModeOfMessageDelivery, send_sms, send_email
+from app.utils import ModeOfMessageDelivery, send_sms, mailgun_client
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -63,9 +63,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         # set the user's last used organization, so it can be retrieved by the client app
         await db.refresh(new_user)
         if notify:
+            # send OTP verification email
             await self.notify(
                 user=new_user,
-                subject="welcome to {settings.PROJECT_NAME}",
+                subject=f"Welcome to {settings.PROJECT_NAME}",
                 mode=ModeOfMessageDelivery.EMAIL,
             message=f"Hi {new_user.full_name}, welcome to {settings.PROJECT_NAME}")
         return new_user
@@ -120,18 +121,28 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         await db.refresh(user)
         return user
 
-    async def notify(self, user: User, message: str, subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS) -> bool:
+    async def notify(self,
+                     user: User,
+                     subject: str, mode: ModeOfMessageDelivery = ModeOfMessageDelivery.SMS,
+                     message: Optional[str] = None,
+                     template: Optional[str] = None, template_vars: dict = None,
+                     ) -> bool:
         """Sends user a notification message"""
-        message_delivery_status: bool = False
+        client_response = None
         if isinstance(mode, str):
             mode = ModeOfMessageDelivery(mode)
         if mode == ModeOfMessageDelivery.SMS:
             send_sms(mobile=user.mobile, message=message)
         elif mode == ModeOfMessageDelivery.EMAIL:
-            message_delivery_status = send_email(recipients=user.email, message=message, subject=subject)
+            message_delivery_status = False
+            response = None
+            client_response = mailgun_client.send(
+                recipients=[user.email], subject=subject, template=template,
+                message=message, template_vars=template_vars
+            )
         else:
             raise Exception("Unsupported message delivery mode!")
-        return message_delivery_status
+        return client_response
 
     def is_active(self, user: User) -> bool:
         return user.is_active

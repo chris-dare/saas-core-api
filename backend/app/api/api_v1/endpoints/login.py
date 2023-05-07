@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any, Optional
+from logging import getLogger
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -14,6 +15,7 @@ from app.exceptions import get_api_error_message, ErrorCode
 from app.utils import ModeOfMessageDelivery
 
 router = APIRouter()
+logger = getLogger(__name__)
 
 
 @router.post("/login/access-token", response_model=schemas.Token)
@@ -54,16 +56,24 @@ async def generate_otp(
     db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """Generates an OTP for 2FA or user verification/activation"""
-    user = await crud.user.get_by_email_or_mobile(db=db, email=email)
-    otp = await crud.otp.create_with_owner(
-        db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user
-    )
-    is_otp_message_sent = False
-    is_otp_message_sent = await crud.otp.send_otp(db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL)
-    response = {
-        "success": is_otp_message_sent,
-        "otp": otp, # TODO: Exclude from API once Twilio funding is secured
-    }
+    try:
+        user = await crud.user.get_by_email(db, email=email)
+        if not user:
+            logger.error(f"User with email {email} not found")
+            raise HTTPException(
+                status_code=400,
+                detail=get_api_error_message(error_code=ErrorCode.USER_NOT_FOUND)
+            )
+        otp = await crud.otp.create_with_owner(
+            db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user,
+        )
+        client_response = await crud.otp.send_otp(db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL)
+        response = {
+            "success": client_response.is_sent,
+            "message": client_response.message,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return response
 
 @router.get("/auth/verify-user-status", response_model=models.UserPublicRead)

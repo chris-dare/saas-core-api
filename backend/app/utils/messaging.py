@@ -1,5 +1,6 @@
 """The :mod:`app.utils.messaging` module contains resuable utils for messaging users via SMS or email
 """
+import json
 # Author: Christopher Dare
 
 from enum import Enum
@@ -22,8 +23,13 @@ class ModeOfMessageDelivery(Enum):
     EMAIL = "email"
 
 
-class EmailTemplate(Enum):
-    NEW_USER_WELCOME = ""
+class MessageClientResponse(BaseModel):
+    is_sent: bool = False
+    response: Optional[requests.Response] = None
+    message: Optional[str] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class MessageClient:
@@ -82,10 +88,11 @@ class EmailMessageClient(MessageClient):
         recipients: Union[List, EmailStr],
         subject: str,
         message: Optional[str] = None,
-        template: Optional[EmailTemplate] = None,
+        template: Optional[str] = None,
         template_vars: Optional[BaseModel] = None,
     ):
-        response = None
+        client_response = MessageClientResponse()
+        recipients if isinstance(recipients, list) else [str(recipients)]
         html_content = None
         if not message and not template:
             raise ValueError(
@@ -93,8 +100,6 @@ class EmailMessageClient(MessageClient):
             )
         if message:
             html_content = message
-        if template:
-            raise ValueError("Dynamic Email templates not yet supported!")
         if self.provider == MessagingProviders.SENDGRID:
             from sendgrid.helpers.mail import Mail
 
@@ -105,7 +110,7 @@ class EmailMessageClient(MessageClient):
                 html_content=html_content,
             )
             try:
-                response = self.client.send(message)
+                client_response.response = self.client.send(message)
             except Exception as e:
                 raise e
         elif self.provider == MessagingProviders.MAILGUN:
@@ -116,20 +121,28 @@ class EmailMessageClient(MessageClient):
                 "subject": f"{subject}",
             }
             if template:
-                mailgun_data["template"] = template.dict() if isinstance(template, EmailTemplate) else template
-                mailgun_data["h:X-Mailgun-Variables"] = template_vars
+                mailgun_data["template"] = template
+                mailgun_data["h:X-Mailgun-Variables"] = json.dumps(template_vars)
             elif message:
                 mailgun_data["text"] = message
-
-            response = requests.post(
-                f"{self.api_base_url}/messages",
-                auth=("api", self.api_key),
-                data=mailgun_data,
-            )
+            try:
+                client_response.response = requests.post(
+                    f"{self.api_base_url}",
+                    auth=("api", self.api_key),
+                    data=mailgun_data,
+                )
+                client_response.is_sent = 200 <= client_response.response.status_code < 300
+                if client_response.is_sent:
+                    client_response.message = "Email sent successfully!"
+            except Exception as e:
+                client_response.response = None
+                client_response.is_sent = False
+                client_response.message = f"Failed to send message via {self.__class__}: {str(e)}"
+                # TODO: Log this error via Sentry
         else:
             raise Exception("Unsupported messaging provider")
 
-        return response
+        return client_response
 
 
 def send_sms(
@@ -141,25 +154,4 @@ def send_sms(
     client.send(message=message, recipient=mobile)
 
 
-def send_email(
-    recipients: Union[List[EmailStr], EmailStr],
-    subject: str,
-    message: Optional[str] = None,
-    template: Optional[EmailTemplate] = None,
-    template_vars: Optional[BaseModel] = None,
-    provider: MessagingProviders = MessagingProviders.SENDGRID,
-):
-    client = EmailMessageClient(provider=provider)
-    recipients = recipients if isinstance(recipients, list) else [recipients]
-    message_delivery_status = False
-    try:
-        response = client.send(
-            recipients=recipients, subject=subject, template=template, message=message
-        )
-        if response.status_code >= 200 or response.status_code < 300:
-            message_delivery_status = True
-    except Exception as e:
-        # TODO: Log this error via Sentry
-        pass
-    finally:
-        return message_delivery_status
+mailgun_client = EmailMessageClient(provider=MessagingProviders.MAILGUN)
