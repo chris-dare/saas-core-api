@@ -112,7 +112,7 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
             template = settings.PASSWORD_RESET_TEMPLATE_ID
             template_vars={
                 "first_name": user.first_name,
-                "password_reset_url": f"{settings.CLIENT_APP_HOST}/reset-password?token={otp.code}"
+                "password_reset_url": f"{settings.CLIENT_APP_PASSWORD_RESET_URL}?token={otp.code}"
             }
         client_response = await crud.user.notify(
             user=user, message=message, subject=subject,
