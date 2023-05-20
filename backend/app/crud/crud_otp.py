@@ -60,7 +60,7 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         """
         Get an OTP by its uuid and user_id
         """
-        if not (uuid or user_id):
+        if not (code or user_id):
             raise ValueError("Technical error: Invalid arguments (user id or obj uuid required)")
         if not isinstance(token_type, models.OTPTypeChoice):
             raise ValueError("Technical error: Invalid token type argument")

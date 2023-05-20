@@ -108,7 +108,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         is_password_changed = False
         if new_password != confirm_password:
             raise ValueError("Passwords do not match")
-        otp: models.OTP = await crud.otp.get(db=db, uuid=token, token_type=models.OTPTypeChoice.PASSWORD_RESET)
+        otp: models.OTP = await crud.otp.get(db=db, code=token, token_type=models.OTPTypeChoice.PASSWORD_RESET)
         if not otp:
             raise HTTPException(status_code=404, detail="Sorry, you have entered an invalid or expired token")
         user: models.User = await self.get(db=db, uuid=otp.user_id)
