@@ -19,7 +19,11 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         """
         Create an OTP for a user. Returns existing OTP if it is unused and has not expired
         """
-        db_obj = await self.get_user_otp(db=db, user=user, token_type=obj_in.token_type)
+        # check if there is an existing otp for the user valid until 5 minutes from now
+        db_obj = await self.get_user_otp(
+            db=db, user=user, token_type=obj_in.token_type,
+            valid_util = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5)
+        )
         if db_obj:
             return db_obj
         obj_in_data = jsonable_encoder(obj_in)
@@ -36,35 +40,47 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         db: AsyncSession, *,
         user: models.User,
         token_type: models.OTPTypeChoice,
+        code: Optional[str] = None,
+        valid_util: datetime.datetime = datetime.datetime.now(datetime.timezone.utc),
     ) -> models.OTP:
-        if not isinstance(token_type, models.OTPTypeChoice):
-            raise ValueError("Technical error: Invalid token type argument")
-        statement = select(models.OTP).where(
-            models.OTP.user_id == user.uuid, models.OTP.token_type == token_type.value
-        ).order_by(models.OTP.created_at.desc())
-        # TODO: Add a filter for token type
-        user_otp = await db.execute(statement)
-        return user_otp.scalars().first()
+        otp = await self.get(
+            db=db, user_id=user.uuid, token_type=token_type, code = code, valid_util=valid_util
+        )
+        return otp
 
     async def get(
-        self,
+        self, *,
         db: AsyncSession,
-        uuid: str,
+        uuid: Optional[str] = None,
+        code: Optional[str] = None,
         token_type: models.OTPTypeChoice,
-        user_id: Optional[str] = None
+        user_id: Optional[str] = None,
+        valid_util: datetime.datetime = datetime.datetime.now(datetime.timezone.utc),
     ) -> Optional[models.OTP]:
         """
         Get an OTP by its uuid and user_id
         """
+        if not (uuid or user_id):
+            raise ValueError("Technical error: Invalid arguments (user id or obj uuid required)")
         if not isinstance(token_type, models.OTPTypeChoice):
             raise ValueError("Technical error: Invalid token type argument")
         statement = select(models.OTP).where(
-            models.OTP.uuid == uuid, models.OTP.token_type == token_type.value
-        ).order_by(models.OTP.created_at.desc())
+            models.OTP.token_type == token_type.value, models.OTP.is_used.is_(False),
+            models.OTP.expires_at > valid_util,
+        )
         if user_id:
             statement = statement.where(models.OTP.user_id == user_id)
-        obj = await db.execute(statement=statement)
-        return obj.scalar_one_or_none()
+        if uuid:
+            statement = statement.where(models.OTP.uuid == uuid)
+        if code:
+            statement = statement.where(models.OTP.code == code)
+        statement = statement.order_by(models.OTP.created_at.desc())
+        results = await db.execute(statement=statement)
+        obj: [models.OTP, None] = results.scalars().first()
+        # TODO: check if the otp has expired
+        # if obj and obj.expires_at < datetime.datetime.now(datetime.timezone.utc):
+        #     obj = None
+        return obj
 
     async def get_multi_by_owner(
         self, db: AsyncSession, *, user_id: str, skip: int = 0, limit: int = 100
@@ -104,5 +120,16 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
             template_vars=template_vars,
         )
         return client_response
+
+    async def mark_as_used(self, db: AsyncSession, *, otp: models.OTP) -> models.OTP:
+        """
+        Mark an OTP as used
+        """
+        otp.is_used = True
+        otp.used_at = datetime.datetime.now()
+        db.add(otp)
+        await db.commit()
+        await db.refresh(otp)
+        return otp
 
 otp = CRUDOtp(models.OTP)

@@ -5,7 +5,7 @@ data concerning OTPs on HyperSenta
 
 import enum
 import uuid as uuid_pkg
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
 import phonenumbers
@@ -45,13 +45,22 @@ class OTP(OTPBase, TimeStampedModel, table=True):
     user_id: uuid_pkg.UUID = Field(
         description="User's public UUID", nullable=False, index=True
     )
+    is_used: bool = Field(
+        description="Indicates whether the OTP has already been used", default=False
+    )
     code: str = Field(description="OTP code", nullable=False)
+    used_at: Optional[datetime] = Field(
+        sa_column=Column(
+            DateTime(timezone=True),
+        ),
+        description="Datetime when OTP was used",
+    )
     expires_at: Optional[datetime] = Field(
         sa_column=Column(
             DateTime(timezone=True),
         ),
         description="OTP expiry datetime",
-        default=datetime.now() + timedelta(minutes=settings.OTP_EXPIRE_MINUTES),
+        default=datetime.now(timezone.utc) + timedelta(minutes=settings.OTP_EXPIRE_MINUTES),
     )
 
     # meta properties

@@ -108,15 +108,16 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         is_password_changed = False
         if new_password != confirm_password:
             raise ValueError("Passwords do not match")
-        otp_in_db: models.OTP = await crud.otp.get(db=db, uuid=token, token_type=models.OTPTypeChoice.PASSWORD_RESET)
-        if not otp_in_db:
+        otp: models.OTP = await crud.otp.get(db=db, uuid=token, token_type=models.OTPTypeChoice.PASSWORD_RESET)
+        if not otp:
             raise HTTPException(status_code=404, detail="Sorry, you have entered an invalid or expired token")
-        user: models.User = await self.get(db=db, uuid=otp_in_db.user_id)
+        user: models.User = await self.get(db=db, uuid=otp.user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         user.password = make_password(new_password)
         await db.commit()
         await db.refresh(user)
+        otp = crud.otp.mark_as_used(db=db, otp=otp)
         is_password_changed = True
         return is_password_changed
 
@@ -134,8 +135,12 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         await db.refresh(user)
         return user
 
-    async def activate(self, db: AsyncSession, *, user: User) -> User:
+    async def activate(self, db: AsyncSession, *, user: User, otp: models.OTP) -> User:
+        from app import crud
+        if otp.user_id != user.uuid or otp.is_used:
+            raise ValueError("Sorry, you have entered an invalid token")
         user.is_active = True
+        otp = await crud.otp.mark_as_used(db=db, otp=otp)
         db.add(user)
         await db.commit()
         await db.refresh(user)
