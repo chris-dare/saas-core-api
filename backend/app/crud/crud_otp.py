@@ -18,6 +18,9 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
     ) -> models.OTP:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, user_id=user.uuid, code=generate_otp_code())
+        if obj_in.token_type == models.OTPTypeChoice.PASSWORD_RESET:
+            # change the otp code to a unique uuid before persisting to db
+            db_obj.code = str(db_obj.uuid) # use the existing uuid which has a unique constraint
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
