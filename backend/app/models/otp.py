@@ -82,5 +82,3 @@ class PasswordResetOTPPayload(BaseModel):
     new_password: str
     confirm_password: str
     token: str
-    email: EmailStr
-

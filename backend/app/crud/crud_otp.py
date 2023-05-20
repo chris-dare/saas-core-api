@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
@@ -35,6 +35,22 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         # TODO: Add a filter for token type
         user_otp = await db.execute(statement)
         return user_otp.scalars().first()
+
+    async def get(
+        self,
+        db: AsyncSession,
+        uuid: str,
+        token_type: models.OTPTypeChoice,
+        user_id: Optional[str] = None
+    ) -> Optional[models.OTP]:
+        """
+        Get an OTP by its uuid and user_id
+        """
+        statement = select(models.OTP).where(models.OTP.uuid == uuid)
+        if user_id:
+            statement = statement.where(models.OTP.user_id == user_id)
+        obj = await db.execute(statement=statement)
+        return obj.scalar_one_or_none()
 
     async def get_multi_by_owner(
         self, db: AsyncSession, *, user_id: str, skip: int = 0, limit: int = 100

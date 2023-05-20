@@ -120,7 +120,7 @@ async def reset_password(
     is_password_changed = False
     try:
         is_password_changed = await crud.user.change_password(
-            db=db, email=payload.email, token=payload.token, new_password=payload.new_password, confirm_password=payload.confirm_password
+            db=db, token=payload.token, new_password=payload.new_password, confirm_password=payload.confirm_password
         )
         if is_password_changed: message = "Password updated successfully"
     except ValueError as e:
