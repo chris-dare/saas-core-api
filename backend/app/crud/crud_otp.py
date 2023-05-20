@@ -16,6 +16,12 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
     async def create_with_owner(
         self, db: AsyncSession, *, obj_in: models.OTPCreate = None, user: models.User,
     ) -> models.OTP:
+        """
+        Create an OTP for a user. Returns existing OTP if it is unused and has not expired
+        """
+        db_obj = await self.get_user_otp(db=db, user=user, token_type=obj_in.token_type)
+        if db_obj:
+            return db_obj
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, user_id=user.uuid, code=generate_otp_code())
         if obj_in.token_type == models.OTPTypeChoice.PASSWORD_RESET:
