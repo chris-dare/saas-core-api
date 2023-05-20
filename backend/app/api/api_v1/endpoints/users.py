@@ -87,6 +87,8 @@ async def activate_user(
     Activates a newly created user via their OTP
     """
     user = await crud.user.get_by_email_or_mobile(db=db, email=email)
+    if user.is_active:
+        raise HTTPException(status_code=400, detail="User is already active")
     otp: models.OTP = await crud.otp.get_user_otp(
         db=db,
         user=user,
