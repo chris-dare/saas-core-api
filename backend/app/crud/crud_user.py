@@ -2,6 +2,7 @@ import datetime
 from typing import Any, Dict, Optional, Union
 import uuid as uuid_pkg
 
+from fastapi import HTTPException, status
 from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -109,10 +110,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             raise ValueError("Passwords do not match")
         otp_in_db: models.OTP = await crud.otp.get(db=db, uuid=token, token_type=models.OTPTypeChoice.PASSWORD_RESET)
         if not otp_in_db:
-            raise HttpException(status_code=404, detail="Sorry, you have entered an invalid or expired token")
+            raise HTTPException(status_code=404, detail="Sorry, you have entered an invalid or expired token")
         user: models.User = await self.get(db=db, uuid=otp_in_db.user_id)
         if not user:
-            raise HttpException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=404, detail="User not found")
         user.password = make_password(new_password)
         await db.commit()
         await db.refresh(user)
