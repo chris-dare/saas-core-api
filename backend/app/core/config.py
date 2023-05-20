@@ -79,6 +79,7 @@ class Settings(BaseSettings):
     EMAIL_TEMPLATES_DIR: str = "/app/app/email-templates/build"
     EMAILS_ENABLED: bool = False
     EMAIL_OTP_TEMPLATE_ID: str = "otp_verification_code"
+    PASSWORD_RESET_TEMPLATE_ID: str = "password_reset_email"
 
     @validator("EMAILS_ENABLED", pre=True)
     def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:

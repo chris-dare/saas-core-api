@@ -1,4 +1,4 @@
-from .otp import OTP, OTPCreate, OTPRead
+from .otp import OTP, OTPCreate, OTPRead, OTPTypeChoice, PasswordResetOTPPayload
 from .user import User, UserCreate, UserRead, NewUserRead, UserPublicRead, UserUpdate
 from .organization import Organization, OrganizationCreate, OrganizationRead, OrganizationUpdate
 from .organization_member import OrganizationMember, OrganizationMemberCreate, OrganizationMemberRead, OrganizationMemberUpdate

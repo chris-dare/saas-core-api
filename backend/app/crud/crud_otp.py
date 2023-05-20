@@ -17,16 +17,20 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         self, db: AsyncSession, *, obj_in: models.OTPCreate = None, user: models.User,
     ) -> models.OTP:
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data, code=generate_otp_code())
+        db_obj = self.model(**obj_in_data, user_id=user.uuid, code=generate_otp_code())
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
 
-    async def get_user_otp(self, db: AsyncSession, *, user: models.User) -> models.OTP:
-        user_otp = await db.execute(
-            select(models.OTP).where(models.OTP.user_id == user.uuid).order_by(models.OTP.created_at.desc())
-        )
+    async def get_user_otp(self,
+        db: AsyncSession, *,
+        user: models.User,
+        token_type: models.OTPTypeChoice,
+    ) -> models.OTP:
+        statement = select(models.OTP).where(models.OTP.user_id == user.uuid).order_by(models.OTP.created_at.desc())
+        # TODO: Add a filter for token type
+        user_otp = await db.execute(statement)
         return user_otp.scalars().first()
 
     async def get_multi_by_owner(
@@ -37,18 +41,34 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         )
         return results.scalars().all()
 
-    async def send_otp(self, db: AsyncSession, *, user: models.User, mode: ModeOfMessageDelivery == ModeOfMessageDelivery.SMS, message: str = None, otp: models.OTP) -> bool:
+    async def send_otp(self,
+        db: AsyncSession, *,
+        user: models.User,
+        mode: ModeOfMessageDelivery == ModeOfMessageDelivery.SMS,
+        message: str = None,
+        otp: models.OTP,
+        token_type: models.OTPTypeChoice,
+    ) -> bool:
         from app import crud
         if not otp:
-            otp: models.OTP = await self.get_user_otp(db=db, user=user)
+            otp: models.OTP = await self.get_user_otp(db=db, user=user, token_type=token_type)
         if mode == ModeOfMessageDelivery.EMAIL:
             subject = f"Your OTP verification code is {otp.code}"
         elif mode == ModeOfMessageDelivery.SMS:
             message = f"Your OTP verification code is {otp.code}"
+        template = settings.EMAIL_OTP_TEMPLATE_ID # default generic template
+        template_vars={"first_name": user.first_name, "otp_code": otp.code} # default template vars
+        if token_type == models.OTPTypeChoice.PASSWORD_RESET:
+            subject = "Reset your password"
+            template = settings.PASSWORD_RESET_TEMPLATE_ID
+            template_vars={
+                "first_name": user.first_name,
+                "password_reset_url": f"{settings.CLIENT_APP_HOST}/reset-password?token={otp.code}"
+            }
         client_response = await crud.user.notify(
             user=user, message=message, subject=subject,
-            mode=mode, template=settings.EMAIL_OTP_TEMPLATE_ID,
-            template_vars={"first_name": user.first_name, "otp_code": otp.code},
+            mode=mode, template=template,
+            template_vars=template_vars,
         )
         return client_response
 

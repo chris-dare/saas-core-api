@@ -51,23 +51,24 @@ async def login_access_token(
     "/auth/generate-otp",
 )
 async def generate_otp(
-    email: str = Body(...),
-    mode: str = Body(...),  # email or SMS
+    otp_in: models.OTPCreate,
     db: Session = Depends(deps.get_async_db),
 ) -> Any:
-    """Generates an OTP for 2FA or user verification/activation"""
+    """Generates an OTP for 2FA, user verification, password reset, etc."""
     try:
-        user = await crud.user.get_by_email(db, email=email)
+        user = await crud.user.get_by_email(db, email=otp_in.email)
         if not user:
-            logger.error(f"User with email {email} not found")
+            logger.error(f"User with email {otp_in.email} not found")
             raise HTTPException(
                 status_code=400,
                 detail=get_api_error_message(error_code=ErrorCode.USER_NOT_FOUND)
             )
         otp = await crud.otp.create_with_owner(
-            db=db, obj_in=models.OTPCreate(user_id=user.uuid), user=user,
+            db=db, obj_in=otp_in, user=user,
         )
-        client_response = await crud.otp.send_otp(db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL)
+        client_response = await crud.otp.send_otp(
+            db=db, user=user, otp=otp, mode=ModeOfMessageDelivery.EMAIL, token_type=otp_in.token_type
+        )
         response = {
             "success": client_response.is_sent,
             "message": client_response.message,
@@ -108,21 +109,23 @@ def test_token(current_user: models.User = Depends(deps.get_current_user)) -> An
     return current_user
 
 
-@router.post("/password-recovery/{email}", response_model=schemas.Msg)
-def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:
-    """
-    Password Recovery
-    """
-    raise NotImplementedError
-
-
-@router.post("/reset-password/", response_model=schemas.Msg)
-def reset_password(
-    token: str = Body(...),
-    new_password: str = Body(...),
-    db: Session = Depends(deps.get_db),
+@router.post("/reset-password/", response_model=None)
+async def reset_password(
+    payload: models.PasswordResetOTPPayload,
+    db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """
-    Reset password
+    Resets a user's password based on a token sent to them via email or sms
     """
-    raise NotImplementedError
+    is_password_changed = False
+    try:
+        is_password_changed = await crud.user.change_password(
+            db=db, email=payload.email, token=payload.token, new_password=payload.new_password, confirm_password=payload.confirm_password
+        )
+        if is_password_changed: message = "Password updated successfully"
+    except ValueError as e:
+        message = str(e)
+    return {
+            "success": is_password_changed,
+            "message": message,
+        }

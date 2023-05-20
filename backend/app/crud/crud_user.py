@@ -71,7 +71,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             message=f"Hi {new_user.full_name}, welcome to {settings.PROJECT_NAME}")
         return new_user
 
-    async def create_organization(self, db: Session, organization_name: str, owner: User, commit: bool = True):
+    async def create_organization(self, db: AsyncSession, organization_name: str, owner: User, commit: bool = True):
         from app.crud.crud_organization import organization as organization_manager
         organization_create = models.OrganizationCreate(
             name=organization_name,
@@ -99,6 +99,25 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             update_data["hashed_password"] = hashed_password
         updated_user = await super().update(db, db_obj=db_obj, obj_in=update_data)
         return updated_user
+
+    async def change_password(self, db: AsyncSession, email: str, token: str, new_password: str, confirm_password: str) -> bool:
+        """Changes a user's password
+        """
+        from app import crud
+        is_password_changed = False
+        if new_password != confirm_password:
+            raise ValueError("Passwords do not match")
+        user: models.User = await self.get_by_email(db=db, email=email)
+        if not user:
+            raise HttpException(status_code=404, detail="User not found")
+        otp_in_db: models.OTP = await crud.otp.get_user_otp(db=db, user=user, token_type=models.OTPTypeChoice.PASSWORD_RESET)
+        if not otp_in_db or otp_in_db.code != token:
+            raise ValueError("Sorry, you have entered an invalid or expired token")
+        user.password = make_password(new_password)
+        await db.commit()
+        await db.refresh(user)
+        is_password_changed = True
+        return is_password_changed
 
     async def authenticate(self, db: AsyncSession, *, email: str, password: str) -> Optional[User]:
         user = await self.get_by_email_or_mobile(db, email=email, mobile=None)
