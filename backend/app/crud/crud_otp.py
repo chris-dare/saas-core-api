@@ -31,7 +31,11 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         user: models.User,
         token_type: models.OTPTypeChoice,
     ) -> models.OTP:
-        statement = select(models.OTP).where(models.OTP.user_id == user.uuid).order_by(models.OTP.created_at.desc())
+        if not isinstance(token_type, models.OTPTypeChoice):
+            raise ValueError("Technical error: Invalid token type argument")
+        statement = select(models.OTP).where(
+            models.OTP.user_id == user.uuid, models.OTP.token_type == token_type.value
+        ).order_by(models.OTP.created_at.desc())
         # TODO: Add a filter for token type
         user_otp = await db.execute(statement)
         return user_otp.scalars().first()
@@ -46,7 +50,11 @@ class CRUDOtp(CRUDBase[models.OTP, models.OTPCreate, models.OTPRead]):
         """
         Get an OTP by its uuid and user_id
         """
-        statement = select(models.OTP).where(models.OTP.uuid == uuid)
+        if not isinstance(token_type, models.OTPTypeChoice):
+            raise ValueError("Technical error: Invalid token type argument")
+        statement = select(models.OTP).where(
+            models.OTP.uuid == uuid, models.OTP.token_type == token_type.value
+        ).order_by(models.OTP.created_at.desc())
         if user_id:
             statement = statement.where(models.OTP.user_id == user_id)
         obj = await db.execute(statement=statement)

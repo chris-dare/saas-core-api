@@ -24,7 +24,10 @@ class OTPTypeChoice(str, enum.Enum):
 
 
 class OTPBase(SQLModel):
-    pass
+    token_type: OTPTypeChoice = Field(
+        description="Type of OTP code/token",
+        default=OTPTypeChoice.USER_VERIFICATION,
+    )
 
 
 class OTP(OTPBase, TimeStampedModel, table=True):
@@ -56,7 +59,7 @@ class OTP(OTPBase, TimeStampedModel, table=True):
 
 
 # Properties to receive via API on creation
-class OTPCreate(BaseModel):
+class OTPCreate(OTPBase):
     token_type: OTPTypeChoice = Field(
         description="Type of OTP to generate",
         default=OTPTypeChoice.USER_VERIFICATION,
