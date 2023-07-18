@@ -19,13 +19,13 @@ async def read_subscriptions(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Retrieves bills created under a user's organization
-    Returns all bills if user is a superuser
+    Retrieves subscriptions created under a user's organization
+    Returns all subscriptions if user is a superuser
     """
-    bills = await crud.bill.get_multi_by_owner(
+    subscriptions = await crud.bill.get_multi_by_owner(
         db=db, customer_id=current_user.uuid, skip=skip, limit=limit,
     )
-    return paginate(bills)
+    return paginate(subscriptions)
 
 
 @router.post("/", response_model=models.BillRead)
