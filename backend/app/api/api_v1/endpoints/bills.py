@@ -19,8 +19,7 @@ async def read_subscriptions(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Retrieves subscriptions created under a user's organization
-    Returns all subscriptions if user is a superuser
+    Retrieves all subscriptions of a user.
     """
     subscriptions = await crud.bill.get_multi_by_owner(
         db=db, customer_id=current_user.uuid, skip=skip, limit=limit,
@@ -36,7 +35,8 @@ async def create_subscription(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    This endpoint creates a draft subscription for a given customer which allows you to pay or send the invoice to your customers.
+    This endpoint creates a draft subscription for a given user which allows them 
+    to pay and confirm their subscription to the event, service or product.
     """
     try:
         subscription = await crud.bill.create_with_owner(db=db, obj_in=subscription_in, user=current_user)
@@ -54,7 +54,7 @@ async def update_subscription(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Update a subscription
+    Update a user's subscription
     """
     subscription = await crud.bill.get(db=db, uuid=subscription_id)
     if not subscription:
@@ -73,7 +73,7 @@ async def read_subscription(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Get subscription by ID
+    Get the full details of a specific subscription of a user
     """
     subscription = await crud.bill.get(db=db, uuid=subscription_id, customer_id=current_user.uuid)
     if not subscription:
@@ -90,7 +90,7 @@ def cancel_subscription(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Cancels a subscription
+    Cancels a specific subscription of the user
     """
     subscription = crud.bill.get(db=db, uuid=subscription_id)
     if not subscription:
