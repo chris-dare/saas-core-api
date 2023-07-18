@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=JsonApiPage[models.BillRead])
-async def read_bills(
+async def read_subscriptions(
     db: Session = Depends(deps.get_async_db),
     skip: int = 0,
     limit: int = 100,
@@ -29,73 +29,73 @@ async def read_bills(
 
 
 @router.post("/", response_model=models.BillRead)
-async def create_bill(
+async def create_subscription(
     *,
     db: Session = Depends(deps.get_async_db),
-    bill_in: models.BillCreate,
+    subscription_in: models.BillCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    This endpoint creates a draft bill for a given customer which allows you to pay or send the invoice to your customers.
+    This endpoint creates a draft subscription for a given customer which allows you to pay or send the invoice to your customers.
     """
     try:
-        bill = await crud.bill.create_with_owner(db=db, obj_in=bill_in, user=current_user)
-        return bill
+        subscription = await crud.bill.create_with_owner(db=db, obj_in=subscription_in, user=current_user)
+        return subscription
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/{bill_id}", response_model=models.BillRead)
-async def update_bill(
+@router.put("/{subscription_id}", response_model=models.BillRead)
+async def update_subscription(
     *,
     db: Session = Depends(deps.get_async_db),
-    bill_id: str,
-    bill_in: models.BillUpdate,
+    subscription_id: str,
+    subscription_in: models.BillUpdate,
     organization: models.Organization = Depends(deps.get_organization),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Update a bill
+    Update a subscription
     """
-    bill = await crud.bill.get(db=db, uuid=bill_id)
-    if not bill:
-        raise HTTPException(status_code=404, detail="Bill not found")
+    subscription = await crud.bill.get(db=db, uuid=subscription_id)
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
     if not crud.user.is_superuser(current_user) and (bill.customer_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    bill = await crud.bill.update(db=db, db_obj=bill, obj_in=bill_in)
-    return bill
+    subscription = await crud.bill.update(db=db, db_obj=bill, obj_in=subscription_in)
+    return subscription
 
 
-@router.get("/{bill_id}", response_model=models.BillRead)
-async def read_bill(
+@router.get("/{subscription_id}", response_model=models.BillRead)
+async def read_subscription(
     *,
     db: Session = Depends(deps.get_async_db),
-    bill_id: str,
+    subscription_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Get bill by ID
+    Get subscription by ID
     """
-    bill = await crud.bill.get(db=db, uuid=bill_id, customer_id=current_user.uuid)
-    if not bill:
-        raise HTTPException(status_code=404, detail="Bill not found")
-    return bill
+    subscription = await crud.bill.get(db=db, uuid=subscription_id, customer_id=current_user.uuid)
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    return subscription
 
 
-@router.delete("/{bill_id}", response_model=models.BillRead)
-def cancel_bill(
+@router.delete("/{subscription_id}", response_model=models.BillRead)
+def cancel_subscription(
     *,
     db: Session = Depends(deps.get_db),
-    bill_id: int,
+    subscription_id: int,
     organization_id: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Cancels a bill
+    Cancels a subscription
     """
-    bill = crud.bill.get(db=db, uuid=bill_id)
-    if not bill:
-        raise HTTPException(status_code=404, detail="Bill not found")
+    subscription = crud.bill.get(db=db, uuid=subscription_id)
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
     if not crud.user.is_superuser(current_user) and (bill.customer_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    bill = crud.bill.remove(db=db, id=id)
-    return bill
+    subscription = crud.bill.remove(db=db, id=id)
+    return subscription
