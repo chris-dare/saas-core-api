@@ -132,7 +132,7 @@ class Bill(BillBase, TimeStampedModel, table=True):
 
 class BillCreate(BillBase):
     product_id: uuid_pkg.UUID = Field(
-        description="The ID of the product/service being sold",
+        description="The ID of the product/service/event being sold",
     )
     description: Optional[str] = Field(
         description="An arbitrary string attached to the object. Often useful for displaying to users",
