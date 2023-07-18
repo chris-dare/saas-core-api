@@ -216,7 +216,7 @@ class Transaction(TransactionBase, TimeStampedModel, table=True):
 
 class TransactionCreate(TransactionBase):
     bill_id: uuid_pkg.UUID = Field(
-        description="The ID of the product/service being sold",
+        description="Bill/subscription ID",
     )
     payment_service_provider = Field(
         description="Payment service provider (PSP) used to process the transaction.\
