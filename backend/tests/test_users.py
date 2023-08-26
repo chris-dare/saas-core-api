@@ -1,4 +1,4 @@
-"""The :mod:`app.tests.test_users.` module contains tests for user management on hypersenta
+"""The :mod:`app.tests.test_users.` module contains tests for user management on serenity
 """
 # Author: Christopher Dare
 

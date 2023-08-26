@@ -1,6 +1,6 @@
 """The :mod:`app.models.bank` module contains models used to
 represent banking information from payment service providers
-data concerning SubAccounts on HyperSenta
+data concerning SubAccounts on Serenity
 """
 # Author: Christopher Dare
 from pydantic import BaseModel

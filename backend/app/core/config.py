@@ -11,12 +11,12 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     OTP_EXPIRE_MINUTES: int = 15
-    SERVER_NAME: str
-    SERVER_HOST: AnyHttpUrl = "http://api.hypersenta.com"
-    CLIENT_APP_HOST: Optional[AnyHttpUrl] = "https://app.hypersenta.com"
+    SERVER_NAME: strserenity.health
+    SERVER_HOST: AnyHttpUrl = "http://api.serenity.health"
+    CLIENT_APP_HOST: Optional[AnyHttpUrl] = "https://app.serenity.health"
     CLIENT_APP_PASSWORD_RESET_URL: Optional[
         AnyHttpUrl
-    ] = "https://app.hypersenta.com/auth/reset-password"
+    ] = "https://app.serenity.health/auth/reset-password"
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'

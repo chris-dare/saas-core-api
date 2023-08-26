@@ -41,14 +41,14 @@ deploy-stag:
   stage: deploy
   script: 
     - >
-      DOMAIN=stag.api.hypersenta.com
-      TRAEFIK_TAG=stag.api.hypersenta.com
-      STACK_NAME=stag-api-hypersenta-com
+      DOMAIN=stag.api.serenity.health
+      TRAEFIK_TAG=stag.api.serenity.health
+      STACK_NAME=stag-api-serenity-com
       TAG=stag
       sh ./scripts/deploy.sh
   environment:
     name: staging
-    url: https://stag.api.hypersenta.com
+    url: https://stag.api.serenity.health
   only:
     - master
   tags:
@@ -59,14 +59,14 @@ deploy-prod:
   stage: deploy
   script:
     - >
-      DOMAIN=api.hypersenta.com
-      TRAEFIK_TAG=api.hypersenta.com
-      STACK_NAME=api-hypersenta-com
+      DOMAIN=api.serenity.health
+      TRAEFIK_TAG=api.serenity.health
+      STACK_NAME=api-serenity-com
       TAG=prod
       sh ./scripts/deploy.sh
   environment:
     name: production
-    url: https://api.hypersenta.com
+    url: https://api.serenity.health
   only:
     - production
   tags:

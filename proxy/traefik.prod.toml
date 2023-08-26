@@ -22,7 +22,7 @@ dashboard = true
     exposedByDefault = false
 
 [certificatesResolvers.letsencrypt.acme]
-  email = "chris@hypersenta.com"
+  email = "chris@serenity.health"
   storage = "/certificates/acme.json"
   [certificatesResolvers.letsencrypt.acme.httpChallenge]
     entryPoint = "web"

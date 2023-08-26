@@ -1,5 +1,5 @@
 """The :mod:`app.models.abstract` module contains abstract classes for building persistent models
-data concerning organizations on HyperSenta
+data concerning organizations on Serenity
 """
 # Author: Christopher Dare
 

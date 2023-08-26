@@ -300,43 +300,43 @@ Check all the corresponding available URLs in the section at the end.
 
 If you are running Docker in an IP address different than `127.0.0.1` (`localhost`) and `192.168.99.100` (the default of Docker Toolbox), you will need to perform some additional steps. That will be the case if you are running a custom Virtual Machine, a secondary Docker Toolbox or your Docker is located in a different machine in your network.
 
-In that case, you will need to use a fake local domain (`dev.api.hypersenta.com`) and make your computer think that the domain is is served by the custom IP (e.g. `192.168.99.150`).
+In that case, you will need to use a fake local domain (`dev.api.serenity.health`) and make your computer think that the domain is is served by the custom IP (e.g. `192.168.99.150`).
 
-If you used the default CORS enabled domains, `dev.api.hypersenta.com` was configured to be allowed. If you want a custom one, you need to add it to the list in the variable `BACKEND_CORS_ORIGINS` in the `.env` file.
+If you used the default CORS enabled domains, `dev.api.serenity.health` was configured to be allowed. If you want a custom one, you need to add it to the list in the variable `BACKEND_CORS_ORIGINS` in the `.env` file.
 
 * Open your `hosts` file with administrative privileges using a text editor:
 
   * **Note for Windows**: If you are in Windows, open the main Windows menu, search for "notepad", right click on it, and select the option "open as Administrator" or similar. Then click the "File" menu, "Open file", go to the directory `c:\Windows\System32\Drivers\etc\`, select the option to show "All files" instead of only "Text (.txt) files", and open the `hosts` file.
-  * **Note for Mac and Linux**: Your `hosts` file is probably located at `/etc/hosts`, you can edit it in a terminal running `sudo nano /etc/hosts`.
-* Additional to the contents it might have, add a new line with the custom IP (e.g. `192.168.99.150`) a space character, and your fake local domain: `dev.api.hypersenta.com`.
-
+  * **Note for Mac and Linux**: Your `hosts` file is probably locserenity.healthhosts`, you can edit it in a terminal running `sudo nano /etc/hosts`.
+* Additional to the contents it might have, add a new line with the custom IP (e.g. `192.168.99.150`) a space character, and your fake local domain: `dev.api.serenity.health`.
+serenity.health
 The new line might look like:
 
 ```
-192.168.99.100    dev.api.hypersenta.com
+192.168.99.100    dev.api.serenity.health
 ```
-
+serenity.health
 * Save the file.
   * **Note for Windows**: Make sure you save the file as "All files", without an extension of `.txt`. By default, Windows tries to add the extension. Make sure the file is saved as is, without extension.
 
-...that will make your computer think that the fake local domain is served by that custom IP, and when you open that URL in your browser, it will talk directly to your locally running server when it is asked to go to `dev.api.hypersenta.com` and think that it is a remote server while it is actually running in your computer.
+...that will make your computer think that the fake local domain is served by that custom IP, and when you open that URL in your browser, it will talk directly to your locally running server when it is asked to go to `dev.api.serenity.health` and think that it is a remote server while it is actually running in your computer.
+serenity.health
+To configure it in your stack, follow the section **Change the development "domain"** below, using the domain `dev.api.serenity.health`.
 
-To configure it in your stack, follow the section **Change the development "domain"** below, using the domain `dev.api.hypersenta.com`.
-
-After performing those steps you should be able to open: http://dev.api.hypersenta.com and it will be server by your stack in `localhost`.
+After performing those steps you should be able to open: http://dev.api.serenity.health and it will be server by your stack in `localhost`.
 
 Check all the corresponding available URLs in the section at the end.
-
+serenity.health
 ### Change the development "domain"
-
-If you need to use your local stack with a different domain than `localhost`, you need to make sure the domain you use points to the IP where your stack is set up. See the different ways to achieve that in the sections above (i.e. using Docker Toolbox with `local.dockertoolbox.tiangolo.com`, using `localhost.tiangolo.com` or using `dev.api.hypersenta.com`).
-
+serenity.health
+If you need to use your local stack with a different domain than `localhost`, you need to make sure the domain you use points to the IP where your stack is set up. See the different ways to achieve that in the sections above (i.e. using Docker Toolbox with `local.dockertoolbox.tiangolo.com`, using `localhost.tiangolo.com` or using `dev.api.serenity.health`).
+serenity.health
 To simplify your Docker Compose setup, for example, so that the API docs (Swagger UI) knows where is your API, you should let it know you are using that domain for development. You will need to edit 1 line in 2 files.
 
 * Open the file located at `./.env`. It would have a line like:
 
 ```
-DOMAIN=localhost
+DOMAIN=localhostserenity.health
 ```
 
 * Change it to the domain you are going to use, e.g.:
@@ -468,7 +468,7 @@ Then you need to have those constraints in your `docker-compose.yml` file for th
 To be able to use different environments, like `prod` and `stag`, you should pass the name of the stack as an environment variable. Like:
 
 ```bash
-STACK_NAME=stag-api-hypersenta-com sh ./scripts/deploy.sh
+STACK_NAME=stag-api-serenity-com sh ./scripts/deploy.sh
 ```
 
 To use and expand that environment variable inside the `docker-compose.yml` files you can add the constraints to the services like:
@@ -496,7 +496,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.api-hypersenta-com.app-db-data == true
+          - node.labels.api-serenity-com.app-db-data == true
 ```
 
 **Note**: The `${STACK_NAME?Variable not set}` means "use the environment variable `STACK_NAME`, but if it is not set, show an error `Variable not set`".
@@ -547,13 +547,13 @@ then chose a node from the list. For example, `dog.example.com`.
 * Add the label to that node. Use as label the name of the stack you are deploying followed by a dot (`.`) followed by the named volume, and as value, just `true`, e.g.:
 
 ```bash
-docker node update --label-add api-hypersenta-com.app-db-data=true dog.example.com
+docker node update --label-add api-serenity-com.app-db-data=true dog.example.com
 ```
 
 * Then you need to do the same for each stack version you have. For example, for staging you could do:
 
 ```bash
-docker node update --label-add stag-api-hypersenta-com.app-db-data=true cat.example.com
+docker node update --label-add stag-api-serenity-com.app-db-data=true cat.example.com
 ```
 
 ### Deploy to a Docker Swarm mode cluster
@@ -597,23 +597,23 @@ TAG=prod FRONTEND_ENV=production bash ./scripts/build-push.sh
 3. **Deploy your stack**
 
 * Set these environment variables:
-  * `DOMAIN=api.hypersenta.com`
-  * `TRAEFIK_TAG=api.hypersenta.com`
-  * `STACK_NAME=api-hypersenta-com`
+  * `DOMAIN=api.serenity.health`
+  * `TRAEFIK_TAG=api.serenity.health`
+  * `STACK_NAME=api-serenity-com`
   * `TAG=prod`
 * Use the provided `scripts/deploy.sh` file with those environment variables:
 
 ```bash
-DOMAIN=api.hypersenta.com \
-TRAEFIK_TAG=api.hypersenta.com \
-STACK_NAME=api-hypersenta-com \
+DOMAIN=api.serenity.health \
+TRAEFIK_TAG=api.serenity.health \
+STACK_NAME=api-hypersserenity.health
 TAG=prod \
 bash ./scripts/deploy.sh
 ```
 
 ---
-
-If you change your mind and, for example, want to deploy everything to a different domain, you only have to change the `DOMAIN` environment variable in the previous commands. If you wanted to add a different version / environment of your stack, like "`preproduction`", you would only have to set `TAG=preproduction` in your command and update these other environment variables accordingly. And it would all work, that way you could have different environments and deployments of the same app in the same cluster.
+serenity.health
+If you change yoserenity.healthor example, want to deploy everything to a different domain, you only have to change the `DOMAIN` environment variable in the previous commands. If you wanted to add a different version / environment of your stack, like "`preproduction`", you would only have to set `TAG=preproduction` in your command and update these other environment variables accordingly. And it would all work, that way you could have different environments and deployments of the same app in the same cluster.
 
 #### Deployment Technical Details
 
@@ -695,41 +695,41 @@ These are the URLs that will be used and generated by the project.
 
 Production URLs, from the branch `production`.
 
-Frontend: https://api.hypersenta.com
+Frontend: https://api.serenity.health
 
-Backend: https://api.hypersenta.com/api/
+Backend: https://api.serenity.health/api/
 
-Automatic Interactive Docs (Swagger UI): https://api.hypersenta.com/docs
+Automatic Interactive Docs (Swagger UI): https://api.serenity.health/docs
 
-Automatic Alternative Docs (ReDoc): https://api.hypersenta.com/redoc
+Automatic Alternative Docs (ReDoc): https://api.serenity.health/redoc
 
-PGAdmin: https://pgadmin.api.hypersenta.com
+PGAdmin: https://pgadmserenity.healthnta.com
 
-Flower: https://flower.api.hypersenta.com
+Flower: https://floweserenity.healthta.com
 
-### Staging URLs
+### Staging URLsserenity.health
 
-Staging URLs, from the branch `master`.
+Staging URLs, from the branch `master`.serenity.health
 
-Frontend: https://stag.api.hypersenta.com
+Frontend: https://stag.api.hyserenity.health
 
-Backend: https://stag.api.hypersenta.com/api/
+Backend: https://stag.api.hserenity.healthapi/
 
-Automatic Interactive Docs (Swagger UI): https://stag.api.hypersenta.com/docs
+Automatic Interactive Docs (Swagger UI): https://stag.api.serenity.health/docs
 
-Automatic Alternative Docs (ReDoc): https://stag.api.hypersenta.com/redoc
+Automatic Alternative Docs (ReDoc): https://stag.api.serenity.health/redoc
 
-PGAdmin: https://pgadmin.stag.api.hypersenta.com
+PGAdmin: https://pgadmin.stserenity.healthnta.com
 
-Flower: https://flower.stag.api.hypersenta.com
+Flower: https://flower.staserenity.healthta.com
 
-### Development URLs
+### Development URLsserenity.health
 
-Development URLs, for local development.
+Development URLs, for local development.serenity.health
 
-Frontend: http://localhost
+Frontend: http://localhostserenity.health
 
-Backend: http://localhost/api/
+Backend: http://localhost/api/serenity.health
 
 Automatic Interactive Docs (Swagger UI): https://localhost/docs
 
@@ -763,27 +763,27 @@ Traefik UI: http://local.dockertoolbox.tiangolo.com:8090
 
 Development URLs, for local development.
 
-Frontend: http://dev.api.hypersenta.com
+Frontend: http://dev.api.serenity.health
 
-Backend: http://dev.api.hypersenta.com/api/
+Backend: http://dev.api.serenity.health/api/
 
-Automatic Interactive Docs (Swagger UI): https://dev.api.hypersenta.com/docs
+Automatic Interactive Docs (Swagger UI): https://dev.api.serenity.health/docs
 
-Automatic Alternative Docs (ReDoc): https://dev.api.hypersenta.com/redoc
+Automatic Alternative Docs (ReDoc): https://dev.api.serenity.health/redoc
 
-PGAdmin: http://dev.api.hypersenta.com:5050
+PGAdmin: http://dev.api.hserenity.health5050
 
-Flower: http://dev.api.hypersenta.com:5555
+Flower: http://dev.api.hserenity.health5555
 
-Traefik UI: http://dev.api.hypersenta.com:8090
+Traefik UI: http://dev.api.serenity.health:8090serenity.health
 
-### Development in localhost with a custom domain URLs
+### Development in localhost with a custom domain URserenity.health
 
-Development URLs, for local development.
+Development URLs, for loserenity.healtht.
 
-Frontend: http://localhost.tiangolo.com
+Frontend: http://localhserenity.healthom
 
-Backend: http://localhost.tiangolo.com/api/
+Backend: http://localhost.tserenity.healthi/
 
 Automatic Interactive Docs (Swagger UI): https://localhost.tiangolo.com/docs
 
