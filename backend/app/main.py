@@ -1,15 +1,11 @@
-from config.asgi import application as django_async_app
-from config.wsgi import application
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi_pagination import add_pagination
-from starlette.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from starlette.middleware.cors import CORSMiddleware
 
-from app.api.api_v1.api import api_router
 from app.core.config import settings
-
-django_async_app = django_async_app
+from app.django_emr.api import django_emr_api_v2_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
@@ -25,14 +21,12 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
-
-app.mount("/legacy", WSGIMiddleware(application))
+app.include_router(django_emr_api_v2_router, prefix=f"/v2/django-emr")
 
 
 @app.get("/")
 def read_main():
-    return {"message": "Hello World"}
+    return {"message": "Deployment is live"}
 
 
 # Register pagination middleware

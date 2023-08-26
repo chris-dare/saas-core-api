@@ -30,7 +30,7 @@ def test_create_user():
     app.dependency_overrides[get_session] = get_session_override
 
     client = TestClient(app)
-    user_create_endpoint = "/v1/users/sign-up"
+    user_create_endpoint = "/v2/django-emr/users/sign-up"
 
     def get_session_override():
         return session
@@ -41,6 +41,7 @@ def test_create_user():
         "first_name": "Test",
         "last_name": "User",
         "email": "test-user23@example.com",
+        "mobile": "+2348030000000",
         "password": "go tigers"
     }
 

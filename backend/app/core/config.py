@@ -6,7 +6,7 @@ from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, v
 
 
 class Settings(BaseSettings):
-    API_V1_STR: str = "/v1"
+    API_V1_STR: str = "/v2"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
@@ -14,7 +14,9 @@ class Settings(BaseSettings):
     SERVER_NAME: str
     SERVER_HOST: AnyHttpUrl = "http://api.hypersenta.com"
     CLIENT_APP_HOST: Optional[AnyHttpUrl] = "https://app.hypersenta.com"
-    CLIENT_APP_PASSWORD_RESET_URL: Optional[AnyHttpUrl] = "https://app.hypersenta.com/auth/reset-password"
+    CLIENT_APP_PASSWORD_RESET_URL: Optional[
+        AnyHttpUrl
+    ] = "https://app.hypersenta.com/auth/reset-password"
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
@@ -43,23 +45,29 @@ class Settings(BaseSettings):
     PAYSTACK_BASE_URL: str = "https://api.paystack.co"
     PAYSTACK_SECRET_KEY: str
 
-    POSTGRES_SERVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
     SENDGRID_API_KEY: Optional[str] = None
-    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    DJANGO_EMR_POSTGRES_SERVER: str
+    DJANGO_EMR_POSTGRES_USER: str
+    DJANGO_EMR_POSTGRES_PASSWORD: str
+    DJANGO_EMR_POSTGRES_DB: str
+    DJANGO_EMR_SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+
+    DJANGO_EMR_SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+
+    @validator("DJANGO_EMR_SQLALCHEMY_DATABASE_URI", pre=True)
+    def assemble_django_emr_db_connection(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> Any:
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
-            scheme="postgresql",
-            user=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
+            scheme="postgresql+asyncpg",
+            user=values.get("DJANGO_EMR_POSTGRES_USER"),
+            password=values.get("DJANGO_EMR_POSTGRES_PASSWORD"),
+            host=values.get("DJANGO_EMR_POSTGRES_SERVER"),
+            path=f"/{values.get('DJANGO_EMR_POSTGRES_DB') or ''}",
+            port="5432",
         )
 
     SMTP_TLS: bool = True

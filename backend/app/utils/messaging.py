@@ -1,8 +1,6 @@
 """The :mod:`app.utils.messaging` module contains resuable utils for messaging users via SMS or email
 """
 import json
-# Author: Christopher Dare
-
 from enum import Enum
 from typing import Any, List, Optional, Union
 
@@ -10,6 +8,8 @@ import requests
 from pydantic import BaseModel, EmailStr
 
 from app.core.config import settings
+
+# Author: Christopher Dare
 
 
 class MessagingProviders(Enum):
@@ -131,13 +131,17 @@ class EmailMessageClient(MessageClient):
                     auth=("api", self.api_key),
                     data=mailgun_data,
                 )
-                client_response.is_sent = 200 <= client_response.response.status_code < 300
+                client_response.is_sent = (
+                    200 <= client_response.response.status_code < 300
+                )
                 if client_response.is_sent:
                     client_response.message = "Email sent successfully!"
             except Exception as e:
                 client_response.response = None
                 client_response.is_sent = False
-                client_response.message = f"Failed to send message via {self.__class__}: {str(e)}"
+                client_response.message = (
+                    f"Failed to send message via {self.__class__}: {str(e)}"
+                )
                 # TODO: Log this error via Sentry
         else:
             raise Exception("Unsupported messaging provider")

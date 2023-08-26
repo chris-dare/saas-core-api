@@ -1,4 +1,4 @@
-# hypersenta-api
+# Serenity Data Bridge
 
 ## Backend Requirements
 
@@ -6,23 +6,17 @@
 * [Docker Compose](https://docs.docker.com/compose/install/).
 * [Poetry](https://python-poetry.org/) for Python package and environment management.
 
-## Frontend Requirements
-
-* Node.js (with `npm`).
-
 ## Backend local development
 
 * Start the stack with Docker Compose:
 
 ```bash
-docker-compose up -d
+docker-compose -f docker-compose-dev.yml up
 ```
 
 * Now you can open your browser and interact with these URLs:
 
-Frontend, built with Docker, with routes handled based on the path: http://localhost
-
-Backend, JSON based web API based on OpenAPI: http://localhost/api/
+Backend, JSON based web API based on OpenAPI: http://localhost/
 
 Automatic interactive documentation with Swagger UI (from the OpenAPI backend): http://localhost/docs
 
@@ -151,6 +145,7 @@ Start the stack with this command:
 ```Bash
 DOMAIN=backend sh ./scripts/test-local.sh
 ```
+
 The `./backend/app` directory is mounted as a "host volume" inside the docker container (set in the file `docker-compose.dev.volumes.yml`).
 You can rerun the test on live code:
 
@@ -244,7 +239,6 @@ $ docker-compose exec backend bash
 ```
 
 * If you created a new model in `./backend/app/app/models/`, make sure to import it in `./backend/app/app/db/base.py`, that Python module (`base.py`) that imports all the models will be used by Alembic.
-
 * After changing a model (for example, adding a column), inside the container, create a revision, e.g.:
 
 ```console
@@ -252,7 +246,6 @@ $ alembic revision --autogenerate -m "Add column last_name to User model"
 ```
 
 * Commit to the git repository the files generated in the alembic directory.
-
 * After creating the revision, run the migration in the database (this is what will actually change the database):
 
 ```console
@@ -312,9 +305,9 @@ In that case, you will need to use a fake local domain (`dev.api.hypersenta.com`
 If you used the default CORS enabled domains, `dev.api.hypersenta.com` was configured to be allowed. If you want a custom one, you need to add it to the list in the variable `BACKEND_CORS_ORIGINS` in the `.env` file.
 
 * Open your `hosts` file with administrative privileges using a text editor:
+
   * **Note for Windows**: If you are in Windows, open the main Windows menu, search for "notepad", right click on it, and select the option "open as Administrator" or similar. Then click the "File" menu, "Open file", go to the directory `c:\Windows\System32\Drivers\etc\`, select the option to show "All files" instead of only "Text (.txt) files", and open the `hosts` file.
   * **Note for Mac and Linux**: Your `hosts` file is probably located at `/etc/hosts`, you can edit it in a terminal running `sudo nano /etc/hosts`.
-
 * Additional to the contents it might have, add a new line with the custom IP (e.g. `192.168.99.150`) a space character, and your fake local domain: `dev.api.hypersenta.com`.
 
 The new line might look like:
@@ -432,7 +425,7 @@ But it would be only to clean them up, leaving them won't really have any effect
 
 ## Deployment
 
-You can deploy the stack to a Docker Swarm mode cluster with a main Traefik proxy, set up using the ideas from <a href="https://dockerswarm.rocks" target="_blank">DockerSwarm.rocks</a>, to get automatic HTTPS certificates, etc.
+You can deploy the stack to a Docker Swarm mode cluster with a main Traefik proxy, set up using the ideas from `<a href="https://dockerswarm.rocks" target="_blank">`DockerSwarm.rocks `</a>`, to get automatic HTTPS certificates, etc.
 
 And you can use CI (continuous integration) systems to do it automatically.
 
@@ -440,7 +433,7 @@ But you have to configure a couple things first.
 
 ### Traefik network
 
-This stack expects the public Traefik network to be named `traefik-public`, just as in the tutorials in <a href="https://dockerswarm.rocks" class="external-link" target="_blank">DockerSwarm.rocks</a>.
+This stack expects the public Traefik network to be named `traefik-public`, just as in the tutorials in `<a href="https://dockerswarm.rocks" class="external-link" target="_blank">`DockerSwarm.rocks `</a>`.
 
 If you need to use a different Traefik public network name, update it in the `docker-compose.yml` files, in the section:
 
@@ -535,7 +528,6 @@ You can run that command every time you deploy, right before deploying, as it do
 If you don't want to use `docker-auto-labels` or for any reason you want to manually assign the constraint labels to specific nodes in your Docker Swarm mode cluster, you can do the following:
 
 * First, connect via SSH to your Docker Swarm mode cluster.
-
 * Then check the available nodes with:
 
 ```console
