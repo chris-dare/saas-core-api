@@ -1,8 +1,8 @@
 #! /usr/bin/env sh
 set -e
 
-if [ -f /app/app/main.py ]; then
-    DEFAULT_MODULE_NAME=app.main
+if [ -f /app/data_bridge/main.py ]; then
+    DEFAULT_MODULE_NAME=data_bridge.main
 elif [ -f /app/main.py ]; then
     DEFAULT_MODULE_NAME=main
 fi

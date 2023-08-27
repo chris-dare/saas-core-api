@@ -6,9 +6,9 @@ from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas import CRUDBase
-from app.django_emr.models import User
-from app.django_emr.utils import verify_user_pbkdf2_sha256_password
+from data_bridge.schemas import CRUDBase
+from data_bridge.django_emr.models import User
+from data_bridge.django_emr.utils import verify_user_pbkdf2_sha256_password
 
 
 class CRUDUser(CRUDBase[User, User, User]):

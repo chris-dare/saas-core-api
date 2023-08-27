@@ -11,8 +11,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from app.main import app
-from app.api.deps import get_db as get_session
+from data_bridge.main import app
+from data_bridge.api.deps import get_db as get_session
 
 
 def test_create_user():

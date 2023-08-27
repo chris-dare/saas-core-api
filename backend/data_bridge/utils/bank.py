@@ -4,8 +4,8 @@
 
 import httpx
 
-from app.core.config import settings
-from app.schemas import PaymentServiceProviderType, PaystackBank, ResolvedBankAccount
+from data_bridge.core.config import settings
+from data_bridge.schemas import PaymentServiceProviderType, PaystackBank, ResolvedBankAccount
 
 
 async def resolve_account_number(account_number: str, bank_code: str):

@@ -5,11 +5,11 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from app import schemas
-from app.core import security
-from app.core.config import settings
-from app.django_emr import crud, models
-from app.django_emr.session import AsyncSessionLocal
+from data_bridge import schemas
+from data_bridge.core import security
+from data_bridge.core.config import settings
+from data_bridge.django_emr import crud, models
+from data_bridge.django_emr.session import AsyncSessionLocal
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/django-emr/auth/access-token"

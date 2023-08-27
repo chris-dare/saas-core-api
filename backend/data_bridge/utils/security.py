@@ -7,7 +7,7 @@ from typing import Optional
 
 from jose import jwt
 
-from app.core.config import settings
+from data_bridge.core.config import settings
 
 
 def make_password(raw_password: str) -> str:

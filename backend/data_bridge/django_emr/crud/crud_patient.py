@@ -4,8 +4,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas import CRUDBase
-from app.django_emr.models import Patient
+from data_bridge.schemas import CRUDBase
+from data_bridge.django_emr.models import Patient
 
 
 class CRUDPatient(CRUDBase[Patient, Patient, Patient]):

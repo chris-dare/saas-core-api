@@ -7,7 +7,7 @@ from typing import Any, List, Optional, Union
 import requests
 from pydantic import BaseModel, EmailStr
 
-from app.core.config import settings
+from data_bridge.core.config import settings
 
 # Author: Christopher Dare
 

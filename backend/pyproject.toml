@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "sentabackend"
+name = "serenity-data-bridge"
 version = "0.1.0"
 description = ""
 authors = ["Chris Dare <engineering@chrisdare.me>"]
@@ -69,9 +69,9 @@ exclude_lines = [
 
 [tool.isort]
 profile = "black"
-known_third_party = ["sentabackend"]
+known_third_party = ["data_bridge"]
 skip_glob = [
-    "app/__init__.py",
+    "data_bridge/__init__.py",
     ]
 
 

@@ -62,7 +62,7 @@ class Patient(PatientBase, TimeStampedModel, table=True):
     def validate_national_phone_number(
         cls, v: Optional[str], values: Dict[str, Any]
     ) -> Any:
-        from app.utils import parse_mobile_number
+        from data_bridge.utils import parse_mobile_number
 
         mobile_number = values.get("mobile")
         if not mobile_number:

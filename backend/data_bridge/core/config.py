@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     OTP_EXPIRE_MINUTES: int = 15
-    SERVER_NAME: strserenity.health
+    SERVER_NAME: str = "serenity.health"
     SERVER_HOST: AnyHttpUrl = "http://api.serenity.health"
     CLIENT_APP_HOST: Optional[AnyHttpUrl] = "https://app.serenity.health"
     CLIENT_APP_PASSWORD_RESET_URL: Optional[

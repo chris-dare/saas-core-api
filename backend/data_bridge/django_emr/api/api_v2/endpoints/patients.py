@@ -6,11 +6,11 @@ from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 from sqlmodel import select
 
-from app.core import security
-from app.django_emr import crud as django_emr_crud
-from app.django_emr import models as django_emr_models
-from app.django_emr.api import deps as django_emr_deps
-from app.middleware.pagination import JsonApiPage
+from data_bridge.core import security
+from data_bridge.django_emr import crud as django_emr_crud
+from data_bridge.django_emr import models as django_emr_models
+from data_bridge.django_emr.api import deps as django_emr_deps
+from data_bridge.middleware.pagination import JsonApiPage
 
 router = APIRouter()
 

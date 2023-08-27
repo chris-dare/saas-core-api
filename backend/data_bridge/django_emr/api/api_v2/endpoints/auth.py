@@ -8,12 +8,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
-from app import schemas
-from app.core import security
-from app.core.config import settings
-from app.django_emr import crud, models
-from app.exceptions import ErrorCode, get_api_error_message
-from app.utils import ModeOfMessageDelivery
+from data_bridge import schemas
+from data_bridge.core import security
+from data_bridge.core.config import settings
+from data_bridge.django_emr import crud, models
+from data_bridge.exceptions import ErrorCode, get_api_error_message
+from data_bridge.utils import ModeOfMessageDelivery
 
 router = APIRouter()
 logger = getLogger(__name__)
