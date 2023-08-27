@@ -71,11 +71,6 @@ services:
       DJANGO_EMR_POSTGRES_PORT: ${DJANGO_EMR_POSTGRES_PORT?Variable not set}
       DJANGO_EMR_POSTGRES_SERVER: ${DJANGO_EMR_POSTGRES_SERVER?Variable not set}
       DJANGO_EMR_POSTGRES_USER: ${DJANGO_EMR_POSTGRES_USER?Variable not set}
-      POSTGRES_DB: ${POSTGRES_DB?Variable not set}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
-      POSTGRES_PORT: ${POSTGRES_PORT?Variable not set}
-      POSTGRES_SERVER: ${POSTGRES_SERVER?Variable not set}
-      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
       PROJECT_NAME: ${PROJECT_NAME?Variable not set}
       SECRET_KEY: ${SECRET_KEY?Variable not set}
       SENTRY_DSN: ${SENTRY_DSN?Variable not set}
