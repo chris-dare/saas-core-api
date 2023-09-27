@@ -5,7 +5,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.cors import CORSMiddleware
 
 from data_bridge.core.config import settings
-from data_bridge.django_emr.api import django_emr_api_v2_router
+from data_bridge.patient_portal.api import patient_portal_api_v2_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
@@ -21,7 +21,7 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.include_router(django_emr_api_v2_router, prefix=f"/v2/django-emr")
+app.include_router(patient_portal_api_v2_router, prefix=f"/v2/patient-portal")
 
 
 @app.get("/")

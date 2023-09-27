@@ -1,4 +1,4 @@
-"""The :mod:`app.django_emr.utils.security` module contains resuable utils for security operations for web APIs
+"""The :mod:`app.patient_portal.utils.security` module contains resuable utils for security operations for web APIs
 """
 # Author: Christopher Dare
 
@@ -7,7 +7,7 @@ import hashlib
 
 
 def verify_user_pbkdf2_sha256_password(plain_password, hashed_password):
-    """The Django app uses the PBKDF2 algorithm with SHA-256 as the underlying hash function for password hashing"""
+    """Verify user password using the PBKDF2 algorithm with SHA-256 as the underlying hash function for password hashing"""
     algo, iterations, salt, hsh = hashed_password.split("$")
     iterations = int(iterations)
 

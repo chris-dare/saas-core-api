@@ -39,7 +39,7 @@ services:
   db:
     image: postgres:12
     volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
+      - data-bridge-db-data:/var/lib/postgresql/data/pgdata
     env_file:
       - .env
     environment:
@@ -47,6 +47,7 @@ services:
     deploy:
       placement:
         constraints:
+          - node.labels.${STACK_NAME?Variable not set}.data-bridge-db-data == true
           - node.labels.${STACK_NAME?Variable not set}.app-db-data == true
 
   backend:
@@ -66,11 +67,11 @@ services:
       MAILGUN_BASE_URL: ${MAILGUN_BASE_URL-""}
       MAILGUN_API_KEY: ${MAILGUN_API_KEY-""}
       PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY?Variable not set}
-      DJANGO_EMR_POSTGRES_DB: ${DJANGO_EMR_POSTGRES_DB?Variable not set}
-      DJANGO_EMR_POSTGRES_PASSWORD: ${DJANGO_EMR_POSTGRES_PASSWORD?Variable not set}
-      DJANGO_EMR_POSTGRES_PORT: ${DJANGO_EMR_POSTGRES_PORT?Variable not set}
-      DJANGO_EMR_POSTGRES_SERVER: ${DJANGO_EMR_POSTGRES_SERVER?Variable not set}
-      DJANGO_EMR_POSTGRES_USER: ${DJANGO_EMR_POSTGRES_USER?Variable not set}
+      PATIENT_PORTAL_POSTGRES_DB: ${PATIENT_PORTAL_POSTGRES_DB?Variable not set}
+      PATIENT_PORTAL_POSTGRES_PASSWORD: ${PATIENT_PORTAL_POSTGRES_PASSWORD?Variable not set}
+      PATIENT_PORTAL_POSTGRES_PORT: ${PATIENT_PORTAL_POSTGRES_PORT?Variable not set}
+      PATIENT_PORTAL_POSTGRES_SERVER: ${PATIENT_PORTAL_POSTGRES_SERVER?Variable not set}
+      PATIENT_PORTAL_POSTGRES_USER: ${PATIENT_PORTAL_POSTGRES_USER?Variable not set}
       PROJECT_NAME: ${PROJECT_NAME?Variable not set}
       SECRET_KEY: ${SECRET_KEY?Variable not set}
       SENTRY_DSN: ${SENTRY_DSN?Variable not set}
@@ -186,6 +187,7 @@ services:
 
 
 volumes:
+  data-bridge-db-data:
   app-db-data:
 
 networks:

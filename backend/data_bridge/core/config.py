@@ -47,26 +47,26 @@ class Settings(BaseSettings):
 
     SENDGRID_API_KEY: Optional[str] = None
 
-    DJANGO_EMR_POSTGRES_SERVER: str
-    DJANGO_EMR_POSTGRES_USER: str
-    DJANGO_EMR_POSTGRES_PASSWORD: str
-    DJANGO_EMR_POSTGRES_DB: str
-    DJANGO_EMR_SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+    PATIENT_PORTAL_POSTGRES_SERVER: str
+    PATIENT_PORTAL_POSTGRES_USER: str
+    PATIENT_PORTAL_POSTGRES_PASSWORD: str
+    PATIENT_PORTAL_POSTGRES_DB: str
+    PATIENT_PORTAL_SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    DJANGO_EMR_SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+    PATIENT_PORTAL_SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    @validator("DJANGO_EMR_SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_django_emr_db_connection(
+    @validator("PATIENT_PORTAL_SQLALCHEMY_DATABASE_URI", pre=True)
+    def assemble_patient_portal_db_connection(
         cls, v: Optional[str], values: Dict[str, Any]
     ) -> Any:
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
-            user=values.get("DJANGO_EMR_POSTGRES_USER"),
-            password=values.get("DJANGO_EMR_POSTGRES_PASSWORD"),
-            host=values.get("DJANGO_EMR_POSTGRES_SERVER"),
-            path=f"/{values.get('DJANGO_EMR_POSTGRES_DB') or ''}",
+            user=values.get("PATIENT_PORTAL_POSTGRES_USER"),
+            password=values.get("PATIENT_PORTAL_POSTGRES_PASSWORD"),
+            host=values.get("PATIENT_PORTAL_POSTGRES_SERVER"),
+            path=f"/{values.get('PATIENT_PORTAL_POSTGRES_DB') or ''}",
             port="5432",
         )
 

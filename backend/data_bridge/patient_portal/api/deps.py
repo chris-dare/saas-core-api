@@ -8,11 +8,11 @@ from sqlalchemy.orm import Session
 from data_bridge import schemas
 from data_bridge.core import security
 from data_bridge.core.config import settings
-from data_bridge.django_emr import crud, models
-from data_bridge.django_emr.session import AsyncSessionLocal
+from data_bridge.patient_portal import crud, models
+from data_bridge.patient_portal.session import AsyncSessionLocal
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/django-emr/auth/access-token"
+    tokenUrl=f"{settings.API_V1_STR}/patient-portal/auth/access-token"
 )
 
 

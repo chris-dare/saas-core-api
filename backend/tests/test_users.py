@@ -30,7 +30,7 @@ def test_create_user():
     app.dependency_overrides[get_session] = get_session_override
 
     client = TestClient(app)
-    user_create_endpoint = "/v2/django-emr/users/sign-up"
+    user_create_endpoint = "/v2/patient-portal/users/sign-up"
 
     def get_session_override():
         return session
