@@ -1,4 +1,4 @@
-FROM chrisdare/senta-core-api-backend:latest
+FROM chrisdare/serenity-data-bridge-backend:latest
 
 # For development, Jupyter remote kernel, Hydrogen
 # Using inside the container:

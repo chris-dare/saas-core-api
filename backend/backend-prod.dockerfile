@@ -1,5 +1,5 @@
 # Dockerfile for production
-FROM chrisdare/senta-core-api-backend:latest
+FROM chrisdare/serenity-data-bridge-backend:latest
 
 WORKDIR /app/
 
