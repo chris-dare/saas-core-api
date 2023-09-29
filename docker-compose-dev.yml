@@ -39,7 +39,7 @@ services:
   db:
     image: postgres:12
     volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
+      - data-bridge-db-data:/var/lib/postgresql/data/pgdata
     env_file:
       - .env
     environment:
@@ -47,6 +47,7 @@ services:
     deploy:
       placement:
         constraints:
+          - node.labels.${STACK_NAME?Variable not set}.data-bridge-db-data == true
           - node.labels.${STACK_NAME?Variable not set}.app-db-data == true
 
   backend:
@@ -60,15 +61,17 @@ services:
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
     command: /start-reload.sh
     environment:
+      CLIENT_APP_HOST: ${CLIENT_APP_HOST?Variable not set}
       FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
       MAILGUN_BASE_URL: ${MAILGUN_BASE_URL-""}
       MAILGUN_API_KEY: ${MAILGUN_API_KEY-""}
-      POSTGRES_DB: ${POSTGRES_DB?Variable not set}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
-      POSTGRES_PORT: ${POSTGRES_PORT?Variable not set}
-      POSTGRES_SERVER: ${POSTGRES_SERVER?Variable not set}
-      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY?Variable not set}
+      PATIENT_PORTAL_POSTGRES_DB: ${PATIENT_PORTAL_POSTGRES_DB?Variable not set}
+      PATIENT_PORTAL_POSTGRES_PASSWORD: ${PATIENT_PORTAL_POSTGRES_PASSWORD?Variable not set}
+      PATIENT_PORTAL_POSTGRES_PORT: ${PATIENT_PORTAL_POSTGRES_PORT?Variable not set}
+      PATIENT_PORTAL_POSTGRES_SERVER: ${PATIENT_PORTAL_POSTGRES_SERVER?Variable not set}
+      PATIENT_PORTAL_POSTGRES_USER: ${PATIENT_PORTAL_POSTGRES_USER?Variable not set}
       PROJECT_NAME: ${PROJECT_NAME?Variable not set}
       SECRET_KEY: ${SECRET_KEY?Variable not set}
       SENTRY_DSN: ${SENTRY_DSN?Variable not set}
@@ -90,7 +93,101 @@ services:
       - traefik.http.services.${STACK_NAME?Variable not set}-backend.loadbalancer.server.port=80
 
 
+  celeryworker:
+    image: '${DOCKER_IMAGE_CELERYWORKER?Variable not set}:${TAG-latest}'
+    depends_on:
+      - db
+      - queue
+    env_file:
+      - .env
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=https://${DOMAIN?Variable not set}
+      # Allow explicit env var override for tests
+      - SMTP_HOST=${SMTP_HOST?Variable not set}
+    build:
+      context: ./backend
+      dockerfile: celeryworker.dockerfile
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-false}
+
+  queue:
+    image: rabbitmq:3
+    # Using the below image instead is required to enable the "Broker" tab in the flower UI:
+    # image: rabbitmq:3-management
+    #
+    # You also have to change the flower command
+
+  flower:
+    image: mher/flower:0.9.7
+    networks:
+      - ${TRAEFIK_PUBLIC_NETWORK?Variable not set}
+      - default
+    env_file:
+      - .env
+    command:
+      - "--broker=amqp://guest@queue:5672//"
+      # For the "Broker" tab to work in the flower UI, uncomment the following command argument,
+      # and change the queue service's image as well
+      # - "--broker_api=http://guest:guest@queue:15672/api//"
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK?Variable not set}
+        - traefik.constraint-label=${TRAEFIK_PUBLIC_TAG?Variable not set}
+        # - traefik.http.routers.${STACK_NAME?Variable not set}-flower-http.rule=Host(`flower.${DOMAIN?Variable not set}`)
+        - traefik.http.routers.${STACK_NAME?Variable not set}-flower-http.entrypoints=http
+        # - traefik.http.routers.${STACK_NAME?Variable not set}-flower-http.middlewares=${STACK_NAME?Variable not set}-https-redirect
+        # - traefik.http.routers.${STACK_NAME?Variable not set}-flower-https.rule=Host(`flower.${DOMAIN?Variable not set}`)
+        # - traefik.http.routers.${STACK_NAME?Variable not set}-flower-https.entrypoints=https
+        # - traefik.http.routers.${STACK_NAME?Variable not set}-flower-https.tls=true
+        # - traefik.http.routers.${STACK_NAME?Variable not set}-flower-https.tls.certresolver=le
+        - traefik.http.services.${STACK_NAME?Variable not set}-flower.loadbalancer.server.port=5555
+
+  redis:
+    image: redis:7-alpine
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    labels:
+      - traefik.enable=true
+    # networks:
+    #   example-network:
+    #     ipv4_address: 172.16.238.11
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    user: "472"
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - ./datasource.yml:/etc/grafana/provisioning/datasource.yml
+      # - .grafana/provisioning/dashboards/fastapi-dashboard.json:/etc/grafana/provisioning/dashboards/fastapi-dashboard.json
+      # - .grafana/dashboards:/tmp/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD?Variable not set}
+      - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP-false}
+    labels:
+      - traefik.enable=true
+    # networks:
+    #   example-network:
+    #     ipv4_address: 172.16.238.12
+
+
 volumes:
+  data-bridge-db-data:
   app-db-data:
 
 networks:
