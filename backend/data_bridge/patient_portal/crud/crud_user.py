@@ -99,8 +99,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         is_password_changed = True
         return is_password_changed
 
-    async def authenticate(self, db: AsyncSession, *, email: str, password: str) -> Optional[User]:
-        user = await self.get_by_email_or_mobile(db, email=email, mobile=None)
+    async def authenticate(self, db: AsyncSession, *, mobile: str, password: str) -> Optional[User]:
+        user = await self.get_by_email_or_mobile(db, mobile=mobile, email=None)
         if not user:
             return None
         if not check_password(hash=user.password, raw_password=password):

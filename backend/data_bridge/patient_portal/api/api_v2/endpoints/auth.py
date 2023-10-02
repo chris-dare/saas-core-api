@@ -28,7 +28,7 @@ async def login_access_token(
     OAuth2 compatible token login, get an access token for future requests
     """
     user = await crud.user.authenticate(
-        db, email=form_data.username, password=form_data.password
+        db, mobile=form_data.username, password=form_data.password
     )
     if not user:
         raise HTTPException(

@@ -22,14 +22,14 @@ from .abstract import TimeStampedModel
 class UserBase(SQLModel):
     first_name: str = Field(description="User's first name", nullable=False)
     last_name: str = Field(description="User's last name", nullable=False)
-    mobile: Optional[str] = Field(
+    mobile: str = Field(
         regex=r"^\+?1?\d{9,15}$",
         index=True,
         nullable=True,
         unique=True,
         description="International country calling format for user's phone number",
     )
-    email: EmailStr = Field(
+    email: Optional[EmailStr] = Field(
         description="User's email address", index=True, nullable=False, unique=True
     )
 
@@ -57,7 +57,7 @@ class User(UserBase, TimeStampedModel, table=True):
     is_superuser: bool = Field(
         description="Flag to mark user's superuser status", default=False
     )
-    password: str = Field(description="Hash of user's password")
+    password: str = Field(description="Hash of user's password/pin")
     last_login: Optional[datetime] = Field(
         sa_column=Column(DateTime(timezone=True)), nullable=True
     )
@@ -93,9 +93,9 @@ class User(UserBase, TimeStampedModel, table=True):
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
-    email: EmailStr
+    email: Optional[EmailStr]
     password: str = Field(description="Hash of user's password")
-    mobile: Optional[str] = None
+    mobile: str = None
     first_name: str = Field(description="User's first name", nullable=False)
     last_name: str = Field(description="User's last name", nullable=False)
     # if org name is available, should be used to create organization for user
