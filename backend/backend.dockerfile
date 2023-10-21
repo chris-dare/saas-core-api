@@ -23,8 +23,10 @@ ARG INSTALL_JUPYTER=false
 RUN bash -c "if [ $INSTALL_JUPYTER == 'true' ] ; then pip install jupyterlab ; fi"
 
 COPY ./ /app
+# update the pre-start script
+COPY ./scripts/prestart.sh.sh /prestart.sh
 # update the start and reload script
 # RUN rm /start-reload.sh
 COPY ./scripts/start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh
-ENV PYTHONPATH=/app/data_bridge
+ENV PYTHONPATH=/app/app

@@ -8,4 +8,4 @@ COPY ./ /app
 # RUN rm /start-reload.sh
 COPY ./scripts/start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh
-ENV PYTHONPATH=/app/data_bridge/
+ENV PYTHONPATH=/app/app/
