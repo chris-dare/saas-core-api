@@ -14,35 +14,42 @@ from sqlmodel.pool import StaticPool
 from app.main import app
 from app.api.deps import get_db as get_session
 
+import logging
 
-def test_create_user():
-    engine = create_engine(
-        "sqlite://",  #
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,  #
-    )
-    SQLModel.metadata.create_all(engine)
+# set log level to debug
+logging.basicConfig(level=logging.INFO)
 
-    with Session(engine) as session:
+
+def get_testing_app(override_db: bool = True,):
+    if override_db:
+        engine = create_engine(
+            "sqlite://",  #
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,  #
+        )
+        SQLModel.metadata.create_all(engine)
+
+        with Session(engine) as session:
+            def get_session_override():
+                return session
+
+        app.dependency_overrides[get_session] = get_session_override
+
         def get_session_override():
             return session
 
-    app.dependency_overrides[get_session] = get_session_override
+        app.dependency_overrides[get_session] = get_session_override
+    return app
 
-    client = TestClient(app)
-    user_create_endpoint = "/v2/patient-portal/users/sign-up"
-
-    def get_session_override():
-        return session
-
-    app.dependency_overrides[get_session] = get_session_override
+def test_create_patient_user():
+    # Sign up a user with only their first and last name, plus their mobile number
+    client = TestClient(get_testing_app())
+    user_create_endpoint = "/v1/users/sign-up"
 
     payload = {
         "first_name": "Test",
         "last_name": "User",
-        "email": "test-user23@example.com",
         "mobile": "+2348030000000",
-        "password": "go tigers"
     }
 
     response = client.post(
@@ -50,5 +57,7 @@ def test_create_user():
     )
 
     app.dependency_overrides.clear()
+
+    logging.info(f"Create user response: {response.json()}")
 
     assert response.status_code == 200
