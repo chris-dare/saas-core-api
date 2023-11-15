@@ -3,7 +3,6 @@
 # Author: Christopher Dare
 
 import httpx
-
 from app.core.config import settings
 from app.schemas import PaymentServiceProviderType, PaystackBank, ResolvedBankAccount
 

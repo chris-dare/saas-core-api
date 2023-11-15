@@ -5,9 +5,8 @@ from enum import Enum
 from typing import Any, List, Optional, Union
 
 import requests
-from pydantic import BaseModel, EmailStr
-
 from app.core.config import settings
+from pydantic import BaseModel, EmailStr
 
 # Author: Christopher Dare
 
@@ -93,7 +92,11 @@ class SMSMessageClient(MessageClient):
             if response.status_code == 201 or response.status_code == 200:
                 client_response.is_sent = response.json().get("status") != "0"
                 client_response.response = client_response.json()
-                client_response.message = "SMS sent successfully!" if client_response.is_sent else "SMS failed to send!"
+                client_response.message = (
+                    "SMS sent successfully!"
+                    if client_response.is_sent
+                    else "SMS failed to send!"
+                )
         else:
             raise Exception("Unsupported messaging provider")
         return client_response

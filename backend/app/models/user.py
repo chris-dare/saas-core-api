@@ -5,16 +5,14 @@ data concerning users on HyperSenta
 
 
 import uuid as uuid_pkg
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Any, Dict, Optional
 
 import phonenumbers
 import sqlalchemy as sa
+from app.schemas import AdministrativeGender, NationalIdType, Token
 from pydantic import BaseModel, EmailStr, root_validator, validator
 from sqlmodel import Column, DateTime, Field, SQLModel
-
-from app.schemas import AdministrativeGender, Token, NationalIdType
-
 
 from .abstract import TimeStampedModel
 
@@ -35,9 +33,10 @@ class UserBase(SQLModel):
         description="User's date of birth", nullable=True, default=None
     )
     gender: Optional[AdministrativeGender] = Field(
-        description="User's gender", nullable=True, default=None,
+        description="User's gender",
+        nullable=True,
+        default=None,
     )
-
 
 
 class User(UserBase, TimeStampedModel, table=True):
@@ -53,7 +52,9 @@ class User(UserBase, TimeStampedModel, table=True):
         description="Internal database id for User table. Not to be exposed to client apps or used as foreign key references",
         default=None,
     )
-    full_name: Optional[str] = Field(description="User's full name", index=True, nullable=False)
+    full_name: Optional[str] = Field(
+        description="User's full name", index=True, nullable=False
+    )
     national_mobile_number: Optional[str] = Field(
         nullable=True, description="National calling format for the user's phone number"
     )
@@ -68,7 +69,7 @@ class User(UserBase, TimeStampedModel, table=True):
     )
     is_active: bool = Field(
         description="Flag to mark user's active status. To be active a user's mobile number and national ID must be verified",
-        default=False
+        default=False,
     )
     is_identity_verified: bool = Field(
         description="Flag to mark user's identity verification status", default=False
@@ -87,6 +88,7 @@ class User(UserBase, TimeStampedModel, table=True):
         cls, v: Optional[str], values: Dict[str, Any]
     ) -> Any:
         from app.utils import parse_mobile_number
+
         mobile_number = values.get("mobile")
         if not mobile_number:
             return v  # since mobile is optional, return None or "" if not present
@@ -108,6 +110,7 @@ class User(UserBase, TimeStampedModel, table=True):
     def validate_nationality(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if v:
             import pycountry
+
             is_valid_country = False
             for country in pycountry.countries:
                 if country.name == v:
@@ -117,7 +120,6 @@ class User(UserBase, TimeStampedModel, table=True):
                 raise ValueError("Invalid country name")
         return v
 
-
     # meta properties
     __tablename__ = "users"
 
@@ -125,15 +127,24 @@ class User(UserBase, TimeStampedModel, table=True):
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     email: Optional[EmailStr] = None
-    password: Optional[str] = Field(description="Hash of user's password or pin", default=None)
+    password: Optional[str] = Field(
+        description="Hash of user's password or pin", default=None
+    )
     mobile: str
-    first_name: str = Field(description="User's first name", nullable=False,)
-    last_name: str = Field(description="User's last name", nullable=False,)
+    first_name: str = Field(
+        description="User's first name",
+        nullable=False,
+    )
+    last_name: str = Field(
+        description="User's last name",
+        nullable=False,
+    )
     # if org name is available, should be used to create organization for user
 
     @validator("password")
     def set_password(cls, v: str, values: Dict[str, Any]) -> Any:
         from app.utils import make_password
+
         # ensure that only the hashed password of the user is saved.
         # TODO: Move this behavior to the User object manager
         return make_password(raw_password=v) if v else None
@@ -147,17 +158,20 @@ class UserRead(UserBase, TimeStampedModel):
         description="National calling format for the user's phone number"
     )
 
+
 class NewUserRead(UserRead, Token):
-    """Model with access token details to authenticate new users before verifying their email
-    """
+    """Model with access token details to authenticate new users before verifying their email"""
+
     pass
 
+
 class UserPublicRead(BaseModel):
-    """Used to check the user's active status
-    """
+    """Used to check the user's active status"""
+
     is_active: bool = Field(
         description="Flag to mark user's active status", default=False
     )
+
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):

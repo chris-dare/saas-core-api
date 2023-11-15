@@ -2,6 +2,7 @@
 
 import enum
 
+
 class AdministrativeGender(str, enum.Enum):
     MALE = "Male"
     FEMALE = "Female"
@@ -14,5 +15,3 @@ class NationalIdType(str, enum.Enum):
     PASSPORT = "Passport"
     DRIVERS_LICENCE = "Drivers Licence"
     VOTERS_CARD = "Voters Card"
-
-

@@ -1,17 +1,16 @@
 import datetime
 from typing import Any
 
+from app import crud, models
+from app.api import deps
+from app.core import security
+from app.middleware.pagination import JsonApiPage
 from app.session import engine
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi_pagination import paginate
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 from sqlmodel import select
-
-from app import crud, models
-from app.api import deps
-from app.middleware.pagination import JsonApiPage
-from app.core import security
 
 router = APIRouter()
 
@@ -69,7 +68,10 @@ async def sign_up(
         return models.NewUserRead(
             **user.dict(),
             access_token=security.create_access_token(
-                subject=user.uuid, expires_delta=datetime.timedelta(minutes=60) # authenticate the user for 1 hour after sign up
+                subject=user.uuid,
+                expires_delta=datetime.timedelta(
+                    minutes=60
+                ),  # authenticate the user for 1 hour after sign up
             ),
         )
     except Exception as e:
@@ -93,11 +95,12 @@ async def activate_user(
         db=db,
         user=user,
         code=otp_code,
-        token_type=models.OTPTypeChoice.USER_VERIFICATION
+        token_type=models.OTPTypeChoice.USER_VERIFICATION,
     )
     if not otp:
         raise HTTPException(
-            status_code=400, detail="We couldn't verify your OTP code. It might be invalid or expired"
+            status_code=400,
+            detail="We couldn't verify your OTP code. It might be invalid or expired",
         )
     try:
         user = await crud.user.activate(db=db, user=user, otp=otp)

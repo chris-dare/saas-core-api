@@ -3,7 +3,7 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
-from app.models import (User, OTP)
+from app.models import OTP, User
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine

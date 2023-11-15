@@ -1,12 +1,11 @@
 import datetime
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
+from app.schemas.base_class import Base
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.schemas.base_class import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)

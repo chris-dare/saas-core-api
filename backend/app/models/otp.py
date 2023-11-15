@@ -10,11 +10,10 @@ from typing import Optional, Union
 
 import phonenumbers
 import sqlalchemy as sa
-from pydantic import EmailStr, validator, BaseModel
-from sqlmodel import Column, DateTime, Field, SQLModel
-
 from app.core.config import settings
 from app.utils import ModeOfMessageDelivery
+from pydantic import BaseModel, EmailStr, validator
+from sqlmodel import Column, DateTime, Field, SQLModel
 
 from .abstract import TimeStampedModel
 
@@ -61,7 +60,8 @@ class OTP(OTPBase, TimeStampedModel, table=True):
             DateTime(timezone=True),
         ),
         description="OTP expiry datetime",
-        default=datetime.now(timezone.utc) + timedelta(minutes=settings.OTP_EXPIRE_MINUTES),
+        default=datetime.now(timezone.utc)
+        + timedelta(minutes=settings.OTP_EXPIRE_MINUTES),
     )
 
     # meta properties
@@ -74,9 +74,7 @@ class OTPCreate(OTPBase):
         description="Type of OTP to generate",
         default=OTPTypeChoice.USER_VERIFICATION,
     )
-    email: Optional[EmailStr] = Field(
-        description="User's email address"
-    )
+    email: Optional[EmailStr] = Field(description="User's email address")
     mode: Optional[ModeOfMessageDelivery] = Field(
         description="Mode of message delivery",
         default=ModeOfMessageDelivery.SMS,

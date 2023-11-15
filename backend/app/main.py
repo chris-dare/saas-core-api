@@ -1,11 +1,10 @@
+from app.api import api_v1_router
+from app.core.config import settings
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi_pagination import add_pagination
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.cors import CORSMiddleware
-
-from app.core.config import settings
-from app.api import api_v1_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"

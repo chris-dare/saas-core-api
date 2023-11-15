@@ -5,9 +5,8 @@
 import hashlib
 from typing import Optional
 
-from jose import jwt
-
 from app.core.config import settings
+from jose import jwt
 
 
 def make_password(raw_password: str) -> str:
