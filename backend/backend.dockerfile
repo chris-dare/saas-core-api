@@ -24,7 +24,7 @@ RUN bash -c "if [ $INSTALL_JUPYTER == 'true' ] ; then pip install jupyterlab ; f
 
 COPY ./ /app
 # update the pre-start script
-COPY ./scripts/prestart.sh.sh /prestart.sh
+COPY ./scripts/prestart.sh /prestart.sh
 # update the start and reload script
 # RUN rm /start-reload.sh
 COPY ./scripts/start-reload.sh /start-reload.sh
