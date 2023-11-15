@@ -95,9 +95,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         user.password = make_password(new_password)
         await db.commit()
         await db.refresh(user)
-        otp = crud.otp.mark_as_used(db=db, otp=otp)
-        is_password_changed = True
-        return is_password_changed
+        crud.otp.mark_as_used(db=db, otp=otp)
+        return user
 
     async def authenticate(self, db: AsyncSession, *, mobile: str, password: str) -> Optional[User]:
         user = await self.get_by_email_or_mobile(db, mobile=mobile, email=None)
