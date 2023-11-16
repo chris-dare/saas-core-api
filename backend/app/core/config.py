@@ -1,3 +1,4 @@
+import enum
 import secrets
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Union
@@ -6,7 +7,7 @@ from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, v
 
 
 class Settings(BaseSettings):
-    API_V1_STR: str = "/v2"
+    API_V1_STR: str = "/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
@@ -117,6 +118,21 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
+class OAuthScopeType(str, enum.Enum):
+    READ_CURRENT_USER = "current_user:read"
+    WRITE_CURRENT_USER = "current_user:write"
+    READ_USERS = "users:read"
+    WRITE_USER_OAUTH2_SCOPE = "user_oauth2_scope:write"
+
+
 settings = Settings()
 # ensure that transaction fees are always 5% by default
 settings.DEFAULT_TRANSACTION_FEE = Decimal(5.00)
+
+
+OAuth2Scopes = {
+    OAuthScopeType.READ_CURRENT_USER.value: "Read information about the current authenticated user",
+    OAuthScopeType.READ_USERS.value: "Read information about all users",
+    OAuthScopeType.WRITE_CURRENT_USER.value: "Read information about all users",
+    OAuthScopeType.WRITE_USER_OAUTH2_SCOPE: "Write oauth scopes for other users",
+}

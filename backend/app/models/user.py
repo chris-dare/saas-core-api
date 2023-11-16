@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 
 import phonenumbers
 import sqlalchemy as sa
+from app.core.config import OAuthScopeType
 from app.schemas import AdministrativeGender, NationalIdType, Token
 from pydantic import BaseModel, EmailStr, root_validator, validator
 from sqlmodel import Column, DateTime, Field, SQLModel
@@ -66,6 +67,11 @@ class User(UserBase, TimeStampedModel, table=True):
     )
     national_id_type: Optional[NationalIdType] = Field(
         description="User's national ID type", nullable=True, default=None
+    )
+    oauth2_scopes: Optional[str] = Field(
+        nullable=True,
+        description="Authorized scopes for the user when authenticated",
+        default=",".join([OAuthScopeType.READ_CURRENT_USER]),
     )
     is_active: bool = Field(
         description="Flag to mark user's active status. To be active a user's mobile number and national ID must be verified",

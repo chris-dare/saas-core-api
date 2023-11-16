@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 
+from app.core.config import OAuthScopeType
 from pydantic import BaseModel
 
 
@@ -10,3 +11,4 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: Optional[str] = None  # subject (user's uuid)
+    scopes: Optional[List[OAuthScopeType]] = []

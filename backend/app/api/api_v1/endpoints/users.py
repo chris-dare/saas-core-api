@@ -4,9 +4,10 @@ from typing import Any
 from app import crud, models
 from app.api import deps
 from app.core import security
+from app.core.config import OAuthScopeType
 from app.middleware.pagination import JsonApiPage
 from app.session import engine
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import paginate
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
@@ -20,7 +21,9 @@ def read_users(
     db: Session = Depends(deps.get_db),
     offset: int = 0,
     limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Security(
+        deps.get_current_active_superuser, scopes=[OAuthScopeType.READ_USERS]
+    ),
 ) -> Any:
     """
     Retrieves a list of users
@@ -34,7 +37,9 @@ async def update_user(
     *,
     db: Session = Depends(deps.get_async_db),
     user_in: models.UserUpdate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Security(
+        deps.get_current_active_user, scopes=[OAuthScopeType.WRITE_CURRENT_USER]
+    ),
 ) -> Any:
     """
     Update the logged in user
@@ -46,7 +51,9 @@ async def update_user(
 @router.get("/me", response_model=models.UserRead)
 def read_user_me(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: models.User = Security(
+        deps.get_current_active_user, scopes=[OAuthScopeType.READ_CURRENT_USER]
+    ),
 ) -> Any:
     """
     Get current user.
@@ -69,6 +76,8 @@ async def sign_up(
             **user.dict(),
             access_token=security.create_access_token(
                 subject=user.uuid,
+                user=user,
+                scopes=[OAuthScopeType.READ_CURRENT_USER],
                 expires_delta=datetime.timedelta(
                     minutes=60
                 ),  # authenticate the user for 1 hour after sign up
@@ -84,6 +93,9 @@ async def activate_user(
     email: str = Body(...),
     otp_code: str = Body(...),
     db: Session = Depends(deps.get_async_db),
+    current_user: models.User = Security(
+        deps.get_current_user, scopes=[OAuthScopeType.READ_CURRENT_USER]
+    ),
 ) -> models.UserRead:
     """
     Activates a newly created user via their OTP
@@ -112,14 +124,16 @@ async def activate_user(
 @router.get("/{user_id}", response_model=models.UserRead)
 async def read_user_by_id(
     user_id: str,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: models.User = Security(
+        deps.get_current_active_superuser, scopes=[OAuthScopeType.READ_USERS]
+    ),
     db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """
     Get a specific user by id
     """
     user = await crud.user.get(db=db, uuid=user_id)
-    if not event:
+    if not user:
         raise HTTPException(status_code=404, detail="User not found")
     if not crud.user.is_superuser(current_user) and (user.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
