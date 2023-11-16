@@ -142,7 +142,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             raise ValueError(
                 "Pass only a mobile or only an email for user authentication"
             )
-        user = await self.get_by_email_or_mobile(db, mobile=mobile, email=None)
+        user = await self.get_by_email_or_mobile(db, mobile=mobile, email=email)
         if not user:
             return None
         if not check_password(hash=user.password, raw_password=password):
