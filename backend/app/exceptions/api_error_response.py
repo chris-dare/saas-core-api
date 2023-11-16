@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class ErrorCode(Enum):
     INACTIVE_USER = "Inactive user"
-    INCORRECT_EMAIL_OR_PASSWORD = "Incorrect email or password"
+    INCORRECT_EMAIL_OR_PASSWORD = "Invalid Username or Password!"
     INVALID_OTP = "Invalid OTP"
     MISSING_EMAIL_OR_MOBILE = "Please provide either email or mobile"
     USER_NOT_FOUND = "We could not find a user with the provided email or mobile"
