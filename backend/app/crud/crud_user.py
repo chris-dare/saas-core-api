@@ -127,8 +127,21 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return user
 
     async def authenticate(
-        self, db: AsyncSession, *, mobile: str, password: str
+        self,
+        db: AsyncSession,
+        *,
+        mobile: str = None,
+        password: str,
+        email: str = None,
     ) -> Optional[User]:
+        if not mobile and not email:
+            raise ValueError(
+                "A user mobile OR email address is required for authentication"
+            )
+        if mobile and email:
+            raise ValueError(
+                "Pass only a mobile or only an email for user authentication"
+            )
         user = await self.get_by_email_or_mobile(db, mobile=mobile, email=None)
         if not user:
             return None
