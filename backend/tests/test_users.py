@@ -15,6 +15,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
+from tests.conftest import new_user_credentials, user_signup_payload, test_client
+
 # set log level to debug
 logging.basicConfig(level=logging.INFO)
 
@@ -44,18 +46,12 @@ def get_testing_app(
     return app
 
 
-def test_onboard_user():
+def test_onboard_user(user_signup_payload, test_client):
     # Sign up a user with only their first and last name, plus their mobile number
-    client = TestClient(get_testing_app())
+    client = test_client
     user_create_endpoint = "/v1/users/sign-up"
 
-    payload = {
-        "first_name": "Test",
-        "last_name": "User",
-        "mobile": "+2348030000000",
-    }
-
-    response = client.post(user_create_endpoint, json=payload)
+    response = client.post(user_create_endpoint, json=user_signup_payload)
 
     logging.info(f"Create user response: {response.json()}")
 
@@ -63,13 +59,7 @@ def test_onboard_user():
 
     assert response.status_code == 200
 
-    payload = {
-        "first_name": "Test",
-        "last_name": "User",
-        "mobile": "+2348030000000",
-    }
-
-    response = client.post(user_create_endpoint, json=payload)
+    response = client.post(user_create_endpoint, json=user_signup_payload)
 
     logging.info(f"Create duplicate user response: {response.json()}")
 
