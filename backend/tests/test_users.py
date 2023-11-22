@@ -7,48 +7,62 @@
 # Creating a user with either an email or mobile should pass
 # After creating a user, the user must own an organization and be a member of that organization
 
+import logging
+
+from app.api.deps import get_db as get_session
+from app.main import app
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from data_bridge.main import app
-from data_bridge.api.deps import get_db as get_session
+from tests.conftest import new_user_credentials, user_signup_payload, test_client
+
+# set log level to debug
+logging.basicConfig(level=logging.INFO)
 
 
-def test_create_user():
-    engine = create_engine(
-        "sqlite://",  #
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,  #
-    )
-    SQLModel.metadata.create_all(engine)
+def get_testing_app(
+    override_db: bool = True,
+):
+    if override_db:
+        engine = create_engine(
+            "sqlite://",  #
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,  #
+        )
+        SQLModel.metadata.create_all(engine)
 
-    with Session(engine) as session:
+        with Session(engine) as session:
+
+            def get_session_override():
+                return session
+
+        app.dependency_overrides[get_session] = get_session_override
+
         def get_session_override():
             return session
 
-    app.dependency_overrides[get_session] = get_session_override
+        app.dependency_overrides[get_session] = get_session_override
+    return app
 
-    client = TestClient(app)
-    user_create_endpoint = "/v2/patient-portal/users/sign-up"
 
-    def get_session_override():
-        return session
+def test_onboard_user(user_signup_payload, test_client):
+    # Sign up a user with only their first and last name, plus their mobile number
+    client = test_client
+    user_create_endpoint = "/v1/users/sign-up"
 
-    app.dependency_overrides[get_session] = get_session_override
+    response = client.post(user_create_endpoint, json=user_signup_payload)
 
-    payload = {
-        "first_name": "Test",
-        "last_name": "User",
-        "email": "test-user23@example.com",
-        "mobile": "+2348030000000",
-        "password": "go tigers"
-    }
+    logging.info(f"Create user response: {response.json()}")
 
-    response = client.post(
-        user_create_endpoint, json=payload
-    )
+    # test user sign up with duplicate mobile number
+
+    assert response.status_code == 200
+
+    response = client.post(user_create_endpoint, json=user_signup_payload)
+
+    logging.info(f"Create duplicate user response: {response.json()}")
 
     app.dependency_overrides.clear()
 
-    assert response.status_code == 200
+    assert response.status_code == 400

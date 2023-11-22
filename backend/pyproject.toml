@@ -37,6 +37,7 @@ httpcore = "^0.16.3"
 prometheus-fastapi-instrumentator = "^5.9.1"
 httpx = "^0.23.3"
 fastapi-redis-cache = "^0.2.5"
+pycountry = "^22.3.5"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.770"
@@ -69,9 +70,9 @@ exclude_lines = [
 
 [tool.isort]
 profile = "black"
-known_third_party = ["data_bridge"]
+known_third_party = ["app"]
 skip_glob = [
-    "data_bridge/__init__.py",
+    "app/__init__.py",
     ]
 
 
