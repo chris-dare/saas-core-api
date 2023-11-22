@@ -23,7 +23,8 @@ async def login_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Any:
     """
-    OAuth2 compatible token login, get an access token for future requests
+    OAuth2 compatible token login, get an access token for future requests.
+    Authentication is done via the user's mobile and their pin
     """
     user = await crud.user.authenticate(
         db,
