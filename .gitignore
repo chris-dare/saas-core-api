@@ -171,3 +171,5 @@ traefik-public-certificates
 # app
 backend/lab
 frontend
+client_demo
+*.ipynb
