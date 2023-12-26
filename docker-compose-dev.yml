@@ -62,6 +62,7 @@ services:
     command: /start-reload.sh
     environment:
       CLIENT_APP_HOST: ${CLIENT_APP_HOST?Variable not set}
+      DEBUG: ${DEBUG?Variable not set}
       FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
       HUBTEL_CLIENT_ID: ${HUBTEL_CLIENT_ID-""}

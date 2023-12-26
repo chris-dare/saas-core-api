@@ -199,7 +199,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return client_response
 
     def is_active(self, user: User) -> bool:
-        return user.is_active
+        # if in debug mode (for testing purposes), always return True
+        return user.is_active if not settings.DEBUG else True
 
     def is_superuser(self, user: User) -> bool:
         return user.is_superuser
