@@ -15,12 +15,15 @@ class TimeStampedModel(SQLModel):
         unique=True,
         index=True,
         nullable=False,
+        description="External UUID",
     )
     created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), default=datetime.utcnow)
+        sa_column=Column(DateTime(timezone=True), default=datetime.utcnow),
+        description="Date and time the object was created",
     )
     updated_at: datetime = Field(
         sa_column=Column(
             DateTime(timezone=True), onupdate=datetime.utcnow, default=datetime.utcnow
-        )
+        ),
+        description="Last date and time the object was updated",
     )

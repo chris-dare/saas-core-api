@@ -123,6 +123,8 @@ class OAuthScopeType(str, enum.Enum):
     WRITE_CURRENT_USER = "current_user:write"
     READ_USERS = "users:read"
     WRITE_USER_OAUTH2_SCOPE = "user_oauth2_scope:write"
+    WRITE_ORGANIZATIONS = "organizations:write"
+    READ_ORGANIZATIONS = "organizations:read"
 
 
 settings = Settings()
@@ -131,8 +133,12 @@ settings.DEFAULT_TRANSACTION_FEE = Decimal(5.00)
 
 
 OAuth2Scopes = {
-    OAuthScopeType.READ_CURRENT_USER.value: "Read information about the current authenticated user",
+    OAuthScopeType.READ_CURRENT_USER.value: "Read information about the current \
+        authenticated user",
     OAuthScopeType.READ_USERS.value: "Read information about all users",
-    OAuthScopeType.WRITE_CURRENT_USER.value: "Read information about all users",
+    OAuthScopeType.WRITE_CURRENT_USER.value: "Write information about the current \
+        authenticated user",
     OAuthScopeType.WRITE_USER_OAUTH2_SCOPE: "Write oauth scopes for other users",
+    OAuthScopeType.WRITE_ORGANIZATIONS: "Write information about organizations",
+    OAuthScopeType.READ_ORGANIZATIONS: "Read information about organizations",
 }
