@@ -1,7 +1,7 @@
 """setup_users_and_otp
 
 Revision ID: ac944c262643
-Revises: 
+Revises:
 Create Date: 2023-10-18 16:26:18.529052
 
 """

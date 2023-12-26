@@ -1,4 +1,4 @@
-"""The :mod:`app.models.OTP` module contains a ORMs used to persist and retrieve 
+"""The :mod:`app.models.OTP` module contains a ORMs used to persist and retrieve
 data concerning OTPs on HyperSenta
 """
 # Author: Christopher Dare
