@@ -25,8 +25,11 @@ class CRUDOrganization(
     ) -> models.Organization:
         from app import crud
 
-        if current_user.uuid != obj_in.owner_id and not current_user.is_superuser:
-            raise ValueError("Not enough permissions!")
+        if current_user.uuid != obj_in.owner_id:
+            raise ValueError(
+                "Can't create organization for another user. \
+                    Invite them to create instead"
+            )
         # find all organizations with existing name or owned by the obj_in.owner_id
         statement = select(models.Organization).where(
             or_(
