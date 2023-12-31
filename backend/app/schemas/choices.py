@@ -104,3 +104,25 @@ class OrganizationVerificationType(str, enum.Enum):
     CERTIFICATE_OF_REGISTRATION = "certificate-of-registration"
     CORPORATE_BANK_ACCOUNT = "corporate-bank-account"
     CORPORATE_MOBILE_MONEY_ACCOUNT = "corporate-mobile-money-account"
+
+
+class PaymentContributionType(str, enum.Enum):
+    COPAY = "copay"
+    COINSURANCE = "coinsurance"
+
+
+class WalletCurrencyType(str, enum.Enum):
+    GHS = "GHS"
+    # NGN = "NGN"
+    # USD = "USD"
+
+
+class WalletStatusType(str, enum.Enum):
+    CREATED = "created"
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+
+
+COUNTRY_CURRENCY_MAP = {
+    OperatingCountryType.GH.value: WalletCurrencyType.GHS.value,
+}

@@ -16,20 +16,23 @@ from sqlmodel import select
 router = APIRouter()
 
 
-@router.get("/", response_model=JsonApiPage[models.Organization])
+@router.get("/", response_model=JsonApiPage[models.OrganizationRead])
 async def read_organizations(
     db: Session = Depends(deps.get_async_db),
     offset: int = 0,
     limit: int = 100,
     current_user: models.User = Security(
         deps.get_current_active_user,
-        scopes=[OAuthScopeType.READ_ORGANIZATIONS],
+        scopes=[OAuthScopeType.READ_CURRENT_USER],
     ),
 ) -> Any:
     """
-    Retrieves a list of organizations
+    Retrieves a list of organizations owned by the user.
+    In future versions, this will also include organizations the user can administrate
     """
-    organizations = await crud.organization.get_multi(db=db, limit=limit, skip=offset)
+    organizations = await crud.organization.get_multi(
+        db=db, limit=limit, skip=offset, owner_id=current_user.uuid
+    )
     return paginate(organizations)
 
 
@@ -78,19 +81,23 @@ async def update_organization(
 async def read_organization_by_id(
     organization_id: str,
     current_user: models.User = Security(
-        deps.get_current_active_superuser,
-        scopes=[OAuthScopeType.READ_USERS],
+        deps.get_current_active_user,
+        scopes=[OAuthScopeType.READ_CURRENT_USER],
     ),
     db: Session = Depends(deps.get_async_db),
 ) -> Any:
     """
     Get a specific organization by id
     """
-    organization = await crud.organization.get(db=db, uuid=organization_id)
+    organization = await crud.organization.get(
+        db=db, uuid=organization_id, owner_id=current_user.uuid
+    )
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
-    if not crud.organization.is_superuser(current_user) and (
-        organization.organization_id != current_user.id
+    # extra precaution to confirm that user is not reading an organization
+    # they should not have access to
+    if not crud.user.is_superuser(current_user) and (
+        organization.owner_id != current_user.uuid
     ):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     return organization

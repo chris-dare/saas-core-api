@@ -9,24 +9,31 @@ from typing import Any, Dict, Optional
 
 import sqlalchemy as sa
 from app.schemas import (
-    OperatingCountryResourceSchema,
+    COUNTRY_CURRENCY_MAP,
     OperatingCountryType,
     OrganizationType,
     OrganizationVerificationType,
+    WalletCurrencyType,
 )
 from pydantic import EmailStr, validator
-from sqlmodel import ARRAY, Column, Field, SQLModel, String
+from sqlmodel import ARRAY, AutoString, Column, Field, SQLModel, String
 
-from .abstract import TimeStampedModel
+from .abstract import (
+    AbstractOperatingCountryResource,
+    AbstractUniqueNamedEntity,
+    TimeStampedModel,
+)
 
 
-class OrganizationBase(SQLModel, OperatingCountryResourceSchema):
+class OrganizationBase(AbstractOperatingCountryResource):
     name: str = Field(
         description="Business name", unique=True, index=True, nullable=False
     )
 
 
-class Organization(OrganizationBase, TimeStampedModel, table=True):
+class Organization(
+    OrganizationBase, TimeStampedModel, AbstractUniqueNamedEntity, table=True
+):
     pk: Optional[int] = Field(
         sa_column=Column(
             "pk",
@@ -46,6 +53,16 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
         description="User who owns the organization",
     )
     country: str = Field(description="Country of address")
+    default_wallet_currency: WalletCurrencyType = Field(
+        description="Wallet currency. If not set, it defaults to \
+            the country of operation",
+        sa_column=Column(
+            "default_wallet_currency",
+            sa.String(15),
+            nullable=False,
+            index=False,
+        ),
+    )
     email: Optional[EmailStr] = Field(
         description="Owner's email address", index=True, nullable=True
     )
@@ -73,7 +90,10 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
         sa_column=Column(ARRAY(String)),
     )
     name: str = Field(
-        description="Business name", unique=True, index=True, nullable=False
+        description="Business name",
+        sa_column=Column(
+            "name", AutoString(70), index=True, nullable=False, unique=True
+        ),
     )
     created_by_id: uuid_pkg.UUID = Field(
         foreign_key="users.uuid",
@@ -84,6 +104,11 @@ class Organization(OrganizationBase, TimeStampedModel, table=True):
     created_by_name: str = Field(
         description="Name of user who created the organization", nullable=False
     )
+
+    @validator("name_chars")
+    def name_chars_validator(cls, v: str) -> str:
+        """Returns the stripped lower case name without spaces in them"""
+        return v.strip().replace(" ", "").lower()
 
     # meta properties
     __tablename__ = "organizations"
@@ -97,26 +122,44 @@ class OrganizationCreate(OrganizationBase):
     country: OperatingCountryType = Field(
         description="Country of the indicated line address",
     )
+    # default_wallet_currency: Optional[WalletCurrencyType] = Field(
+    #     description="Wallet currency. Defaults to (and currently limited to) currency \
+    #     of operating country. e.g. Ghana is GHS"
+    # )
     email: str = Field(description="Email address of organization (or its owner)")
     line_address: Optional[str] = Field(
         default="", description="Line address of organization"
     )
     organization_type: OrganizationType = Field(description="Type of organization")
-    owner_id: uuid_pkg.UUID = Field(description="User id of the organization's owner")
+    owner_id: Optional[uuid_pkg.UUID] = Field(
+        description="User id of the organization's owner",
+        default=None,
+    )
     region: str = Field(
         default="",
         description="Region of the indicated line address",
     )
 
+    def name_chars(self) -> str:
+        """Returns the stripped lower case name without spaces in them"""
+        return self.name.strip().replace(" ", "").lower()
+
 
 class OrganizationRead(OrganizationBase):
+    uuid: uuid_pkg.UUID = Field(default="Unique resource identifier")
     country: str
     email: str
+    is_verified: bool = Field(
+        description="Flag to mark business's verification status", default=False
+    )
     line_address: str
     organization_type: OrganizationType
     owner_first_name: str
     owner_last_name: str
     region: str
+    default_wallet_currency: WalletCurrencyType = Field(
+        description="Default Wallet currency"
+    )
     verification_document: Optional[str] = Field(
         description="Link to uploaded verification document"
     )

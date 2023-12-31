@@ -25,7 +25,8 @@ def upgrade() -> None:
         sa.Column("pk", sa.INTEGER(), autoincrement=True, nullable=False),
         sa.Column("verification_mode_types", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("uuid", sqlmodel.sql.sqltypes.GUID(), nullable=False),
-        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("name", sa.VARCHAR(length=70), nullable=False),
+        sa.Column("name_chars", sa.VARCHAR(length=70), nullable=False),
         sa.Column("owner_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
         sa.Column("country", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("email", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
@@ -46,6 +47,7 @@ def upgrade() -> None:
         sa.Column(
             "verification_document", sqlmodel.sql.sqltypes.AutoString(), nullable=True
         ),
+        sa.Column("default_wallet_currency", sa.String(length=15), nullable=False),
         sa.Column("created_by_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
         sa.Column(
             "created_by_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
@@ -64,13 +66,19 @@ def upgrade() -> None:
         op.f("ix_organizations_created_by_id"),
         "organizations",
         ["created_by_id"],
-        unique=True,
+        unique=False,
     )
     op.create_index(
         op.f("ix_organizations_email"), "organizations", ["email"], unique=False
     )
     op.create_index(
         op.f("ix_organizations_name"), "organizations", ["name"], unique=True
+    )
+    op.create_index(
+        op.f("ix_organizations_name_chars"),
+        "organizations",
+        ["name_chars"],
+        unique=True,
     )
     op.create_index(
         op.f("ix_organizations_owner_id"), "organizations", ["owner_id"], unique=True
@@ -88,6 +96,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_organizations_pk"), table_name="organizations")
     op.drop_index(op.f("ix_organizations_owner_id"), table_name="organizations")
     op.drop_index(op.f("ix_organizations_name"), table_name="organizations")
+    op.drop_index(op.f("ix_organizations_name_chars"), table_name="organizations")
     op.drop_index(op.f("ix_organizations_email"), table_name="organizations")
     op.drop_index(op.f("ix_organizations_created_by_id"), table_name="organizations")
     op.drop_table("organizations")

@@ -207,5 +207,3 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
 
 user = CRUDUser(User)
-
-user = CRUDUser(User)

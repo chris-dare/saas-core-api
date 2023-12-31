@@ -124,8 +124,9 @@ class OAuthScopeType(str, enum.Enum):
     WRITE_CURRENT_USER = "current_user:write"
     READ_USERS = "users:read"
     WRITE_USER_OAUTH2_SCOPE = "user_oauth2_scope:write"
-    WRITE_ORGANIZATIONS = "organizations:write"
-    READ_ORGANIZATIONS = "organizations:read"
+    WRITE_ORGANIZATIONS_AS_ADMIN = "organizations_as_admin:write"
+    READ_ORGANIZATIONS_AS_ADMIN = "organizations_as_admin:read"
+    READ_WALLETS_AS_ADMIN = "wallets_as_admin:read"
 
 
 settings = Settings()
@@ -140,6 +141,10 @@ OAuth2Scopes = {
     OAuthScopeType.WRITE_CURRENT_USER.value: "Write information about the current \
         authenticated user",
     OAuthScopeType.WRITE_USER_OAUTH2_SCOPE: "Write oauth scopes for other users",
-    OAuthScopeType.WRITE_ORGANIZATIONS: "Write information about organizations",
-    OAuthScopeType.READ_ORGANIZATIONS: "Read information about organizations",
+    OAuthScopeType.WRITE_ORGANIZATIONS_AS_ADMIN: "Write information about organizations \
+        as an administrator",
+    OAuthScopeType.READ_ORGANIZATIONS_AS_ADMIN: "Read information about organizations \
+        as an administrator",
+    OAuthScopeType.READ_WALLETS_AS_ADMIN: "Read information about healthcare wallets \
+        as an administrator",
 }
