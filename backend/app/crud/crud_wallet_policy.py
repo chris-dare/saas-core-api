@@ -1,11 +1,7 @@
-import datetime
 import uuid as uuid_pkg
-from typing import List, Optional
+from typing import Optional
 
 from app import models
-from app.core.config import settings
-from app.core.security import generate_otp_code
-from app.utils import ModeOfMessageDelivery
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
