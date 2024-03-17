@@ -17,17 +17,9 @@ A transaction typically has the following information:
 """
 # Author: Chris Dare
 
-import uuid as uuid_pkg
-from datetime import datetime
-from decimal import Decimal
 from enum import Enum
-from typing import Optional
 
-import httpx
-import orm
-import sqlalchemy as sa
-from pydantic import EmailStr, validator
-from sqlmodel import Column, Field, SQLModel, UniqueConstraint
+from pydantic import validator
 
 
 class TransactionStatusType(str, Enum):

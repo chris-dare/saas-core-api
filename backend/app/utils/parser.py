@@ -2,6 +2,9 @@
 """
 # Author: Christopher Dare
 
+from decimal import ROUND_UP, Decimal
+from typing import Union
+
 import phonenumbers
 
 
@@ -25,3 +28,22 @@ def parse_mobile_number(
     except phonenumbers.NumberParseException as err:
         raise ValueError("mobile or telephone number is invalid")
     return mobile
+
+
+def quantize_monetary_number(
+    amount: Union[str, Decimal, int], rounding=ROUND_UP
+) -> Decimal:
+    """Quantizes an amount to 2 decimal places"""
+    if amount is None:
+        amount = Decimal(0)
+    if isinstance(amount, (str, int)):
+        amount = Decimal(amount)
+    precision = Decimal("0.01")
+
+    return round(amount, 2)
+
+    # alternatively, use the quantize method on the decimal?
+    # return amount.quantize(
+    #     precision=precision,
+    #     rounding=ROUND_UP,
+    # )

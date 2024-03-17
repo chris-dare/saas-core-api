@@ -8,6 +8,7 @@ from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, v
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/v1"
+    DEBUG: Optional[bool] = False
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
@@ -123,6 +124,9 @@ class OAuthScopeType(str, enum.Enum):
     WRITE_CURRENT_USER = "current_user:write"
     READ_USERS = "users:read"
     WRITE_USER_OAUTH2_SCOPE = "user_oauth2_scope:write"
+    WRITE_ORGANIZATIONS_AS_ADMIN = "organizations_as_admin:write"
+    READ_ORGANIZATIONS_AS_ADMIN = "organizations_as_admin:read"
+    READ_WALLETS_AS_ADMIN = "wallets_as_admin:read"
 
 
 settings = Settings()
@@ -131,8 +135,16 @@ settings.DEFAULT_TRANSACTION_FEE = Decimal(5.00)
 
 
 OAuth2Scopes = {
-    OAuthScopeType.READ_CURRENT_USER.value: "Read information about the current authenticated user",
+    OAuthScopeType.READ_CURRENT_USER.value: "Read information about the current \
+        authenticated user",
     OAuthScopeType.READ_USERS.value: "Read information about all users",
-    OAuthScopeType.WRITE_CURRENT_USER.value: "Read information about all users",
+    OAuthScopeType.WRITE_CURRENT_USER.value: "Write information about the current \
+        authenticated user",
     OAuthScopeType.WRITE_USER_OAUTH2_SCOPE: "Write oauth scopes for other users",
+    OAuthScopeType.WRITE_ORGANIZATIONS_AS_ADMIN: "Write information about organizations \
+        as an administrator",
+    OAuthScopeType.READ_ORGANIZATIONS_AS_ADMIN: "Read information about organizations \
+        as an administrator",
+    OAuthScopeType.READ_WALLETS_AS_ADMIN: "Read information about healthcare wallets \
+        as an administrator",
 }

@@ -25,24 +25,32 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
 
     async def get(
-        self, db: AsyncSession, id: Optional[Any] = None, uuid: Optional[Any] = None
+        self,
+        db: AsyncSession,
+        uuid: Optional[Any] = None,
+        **kwargs,
     ) -> Optional[ModelType]:
-        statement = select(
-            self.model
-        ).where(
+        statement = select(self.model).where(
             self.model.uuid == uuid,
         )
+        for key in kwargs:
+            statement.where(key == kwargs[key])
         obj = await db.execute(statement=statement)
         return obj.scalar_one_or_none()
 
     async def get_multi(
-        self, db: AsyncSession, *, skip: int = 0, limit: int = 100
+        self,
+        db: AsyncSession,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        **kwargs,
     ) -> List[ModelType]:
-        statement = select(
-            self.model
-        ).offset(skip).limit(limit)
+        statement = select(self.model).offset(skip).limit(limit)
+        for key in kwargs:
+            statement.where(key == kwargs[key])
         results = await db.execute(statement=statement)
-        return results.scalars().all() # type: ModelType | None
+        return results.scalars().all()  # type: ModelType | None
 
     async def create(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
@@ -57,7 +65,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db: AsyncSession,
         *,
         db_obj: ModelType,
-        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+        obj_in: Union[UpdateSchemaType, Dict[str, Any]],
     ) -> ModelType:
         obj_data = jsonable_encoder(db_obj)
         if isinstance(obj_in, dict):
@@ -72,12 +80,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def remove(self, db: AsyncSession, *, uuid: Optional[Any], obj: ModelType = None, soft_delete: bool = True) -> ModelType:
+    async def remove(
+        self,
+        db: AsyncSession,
+        *,
+        uuid: Optional[Any],
+        obj: ModelType = None,
+        soft_delete: bool = True,
+    ) -> ModelType:
         if not obj:
             # confirm that we're deleting the right type of object for this manager class
-            statement = select(
-                self.model
-            ).where(
+            statement = select(self.model).where(
                 self.model.uuid == uuid,
             )
             obj = await db.execute(statement=statement)

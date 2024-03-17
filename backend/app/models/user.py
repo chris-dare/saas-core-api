@@ -1,4 +1,4 @@
-"""The :mod:`app.models.user` module contains a ORMs used to persist and retrieve 
+"""The :mod:`app.models.user` module contains a ORMs used to persist and retrieve
 data concerning users on HyperSenta
 """
 # Author: Christopher Dare

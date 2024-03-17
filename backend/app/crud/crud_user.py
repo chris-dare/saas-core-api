@@ -42,8 +42,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         results = await db.execute(statement)
         return results.scalar_one_or_none()
 
-    def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
-        return db.query(User).filter(User.uuid == uuid).first()
+    async def get_by_uuid(self, db: Session, *, uuid: str) -> Optional[User]:
+        statement = select(User).where(User.uuid == uuid)
+        results = await db.execute(statement)
+        return results.scalar_one_or_none()
 
     async def create(
         self,
@@ -197,12 +199,11 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return client_response
 
     def is_active(self, user: User) -> bool:
-        return user.is_active
+        # if in debug mode (for testing purposes), always return True
+        return user.is_active if not settings.DEBUG else True
 
     def is_superuser(self, user: User) -> bool:
         return user.is_superuser
 
-
-user = CRUDUser(User)
 
 user = CRUDUser(User)
